@@ -14,13 +14,13 @@
             android:id="@+id/play1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/txt_start_playing"
+            android:background="@drawable/track_play_btn"
             custom:playBackFileName="@string/track1_3gp"/>
        <com.spazomatic.nabsta.controls.RecordButton
            android:id="@+id/record1"
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
-           android:text="@string/txt_start_recording"
+           android:background="@drawable/track_record_btn"
            custom:recordFileName="@string/track1_3gp"/>
    </LinearLayout>
 
@@ -32,13 +32,13 @@
             android:id="@+id/play2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/txt_start_playing"
+            android:background="@drawable/track_play_btn"
             custom:playBackFileName="@string/track2_3gp"/>
         <com.spazomatic.nabsta.controls.RecordButton
             android:id="@+id/record2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/txt_start_recording"
+            android:background="@drawable/track_record_btn"
             custom:recordFileName="@string/track2_3gp"/>
     </LinearLayout>
     <LinearLayout
@@ -49,13 +49,13 @@
             android:id="@+id/play3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/txt_start_playing"
+            android:background="@drawable/track_play_btn"
             custom:playBackFileName="@string/track3_3gp"/>
         <com.spazomatic.nabsta.controls.RecordButton
             android:id="@+id/record3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/txt_start_recording"
+            android:background="@drawable/track_record_btn"
             custom:recordFileName="@string/track3_3gp"/>
     </LinearLayout>
     <LinearLayout

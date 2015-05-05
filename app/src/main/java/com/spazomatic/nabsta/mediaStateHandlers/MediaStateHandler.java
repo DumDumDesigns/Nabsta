@@ -5,8 +5,6 @@ import android.util.Log;
 import android.widget.Button;
 
 import com.spazomatic.nabsta.NabstaApplication;
-import com.spazomatic.nabsta.R;
-import com.spazomatic.nabsta.controls.PlayButton;
 
 /**
  * Created by samuelsegal on 4/23/15.
@@ -17,12 +15,27 @@ public class MediaStateHandler {
     String fileName;
     private boolean isComplete = true;
     private boolean isLooping;
+    private boolean isOfMasterTrack;
+    private static int trackCountForMaster;
+
     public MediaStateHandler(Context context, Button button, String fileName) {
         this.fileName = fileName;
         this.context = context;
         this.button = button;
     }
-
+    public MediaStateHandler(Context context, Button button, String fileName, boolean isOfMasterTrack) {
+        this(context, button, fileName);
+        this.isOfMasterTrack = isOfMasterTrack;
+    }
+    public static synchronized void increaseTrackCountForMaster(){
+        ++trackCountForMaster;
+        Log.d(NabstaApplication.LOG_TAG, String.format("InCREASING TRACK COUNT: %d", trackCountForMaster));
+    }
+    private static synchronized int decreaseTrackCountForMaster(){
+        --trackCountForMaster;
+        Log.d(NabstaApplication.LOG_TAG, String.format("DECREASING TRACK COUNT: %d", trackCountForMaster));
+        return trackCountForMaster;
+    }
     public String getFileName() {
         return fileName;
     }
@@ -50,15 +63,19 @@ public class MediaStateHandler {
     public void complete(){
         Log.d(NabstaApplication.LOG_TAG, "Media state handler completing.");
         isComplete = true;
-        button.setText(context.getResources().getString(R.string.txt_start_playing));
+        if(isOfMasterTrack){
+            if (decreaseTrackCountForMaster() == 0) {
+                button.setSelected(false);
+            }
+        }else{
+            button.setSelected(false);
+        }
     }
 
-    public Button getButton() {
-        return button;
+    public void begin() {
+        if(isOfMasterTrack){
+            increaseTrackCountForMaster();
+        }
+        button.setSelected(true);
     }
-
-    public void setButton(PlayButton button) {
-        this.button = button;
-    }
-
 }

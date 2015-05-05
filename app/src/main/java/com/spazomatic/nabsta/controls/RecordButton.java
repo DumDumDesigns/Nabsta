@@ -27,13 +27,13 @@ public class RecordButton extends Button {
         public void onClick(View v) {
             if(arm != null) {
                 if (!arm.isRecording()) {
-                    setText(getResources().getString(R.string.txt_stop_recording));
                     arm.setIsRecording(true);
+                    setSelected(true);
                     Thread recordThread = new Thread(arm);
                     recordThread.start();
                 } else {
                     arm.setIsRecording(false);
-                    setText(getResources().getString(R.string.txt_start_recording));
+                    setSelected(false);
                 }
             }else{
                 Log.d(NabstaApplication.LOG_TAG, "AudioRecordManager is null.");

@@ -26,15 +26,13 @@ public class PlayButton extends Button {
         public void onClick(View v) {
             if(apm != null) {
                 if (apm.isReady()) {
-                    setText(getResources().getString(R.string.txt_stop_playing));
                     Thread playbackThread = new Thread(apm);
                     playbackThread.start();
                 } else {
                     apm.callStopPlaying();
-                    setText(getResources().getString(R.string.txt_start_playing));
                 }
             }else{
-                Log.d(NabstaApplication.LOG_TAG,"PlayBackManager is null.");
+                Log.d(NabstaApplication.LOG_TAG, "PlayBackManager is null.");
             }
         }
     };
@@ -65,21 +63,21 @@ public class PlayButton extends Button {
 
     private void playTrack(String fileName, Context context) {
         playBackFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
-        Log.d(NabstaApplication.LOG_TAG,"Got playBackFileName attr: " + playBackFileName);
+        Log.d(NabstaApplication.LOG_TAG, String.format("Got playBackFileName attr: %s",playBackFileName));
 
         File f = new File(NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(), fileName);
         f.setExecutable(true);
         f.setReadable(true);
         f.setWritable(true);
         if(!f.exists()) {
-            Log.d(NabstaApplication.LOG_TAG,"Creating new playback file: " + f.getName());
+            Log.d(NabstaApplication.LOG_TAG, String.format("Creating new playback file: %s",f.getName()));
             try {
                 f.createNewFile();
             } catch (IOException e) {
-                Log.e(NabstaApplication.LOG_TAG, "Error Creating File: " + f + " Error Message: " + e.getMessage());
+                Log.e(NabstaApplication.LOG_TAG, String.format("Error Creating File: %s Error Message: %s",f,e.getMessage()));
             }
         }else{
-            Log.d(NabstaApplication.LOG_TAG,"Playback file exists: " + f.getName() );
+            Log.d(NabstaApplication.LOG_TAG, String.format("Playback file exists: %s", f.getName()));
         }
         mediaStateHandler = new MediaStateHandler(context, this, playBackFileName);
         apm = new AudioPlaybackManager(mediaStateHandler);
