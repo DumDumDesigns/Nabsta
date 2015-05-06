@@ -44,23 +44,23 @@ public class NabstaApplication extends Application{
         int i = 0;
         for(String fileName : tracks) {
             String playBackFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
-            Log.d(NabstaApplication.LOG_TAG, String.format("Got playBackFileName attr: %s", playBackFileName));
+            Log.d(NabstaApplication.LOG_TAG, "Got playBackFileName attr: " + playBackFileName);
 
             File f = new File(NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(), fileName);
             f.setExecutable(true);
             f.setReadable(true);
             f.setWritable(true);
             if (!f.exists()) {
-                Log.d(NabstaApplication.LOG_TAG, String.format("Creating new playback file: %s",f.getName()));
+                Log.d(NabstaApplication.LOG_TAG, "Creating new playback file: " + f.getName());
                 try {
                     f.createNewFile();
                 } catch (IOException e) {
-                    Log.e(NabstaApplication.LOG_TAG, String.format("Error Creating File: %s Error Message: %s",f,e.getMessage()));
+                    Log.e(NabstaApplication.LOG_TAG, "Error Creating File: " + f + " Error Message: " + e.getMessage());
                 }
             } else {
-                Log.d(NabstaApplication.LOG_TAG, String.format("Playback file exists: %s", f.getName()));
+                Log.d(NabstaApplication.LOG_TAG, "Playback file exists: " + f.getName());
             }
-            Log.d(LOG_TAG, String.format("Adding track %s to ALL_TRACKS.", playBackFileName));
+            Log.d(LOG_TAG, "Adding track " + playBackFileName + " to ALL_TRACKS.");
             ALL_TRACKS[i++] = playBackFileName;
         }
 

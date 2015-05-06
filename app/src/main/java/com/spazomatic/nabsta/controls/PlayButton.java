@@ -11,6 +11,7 @@ import com.spazomatic.nabsta.AudioPlaybackManager;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
+import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,9 +20,10 @@ import java.io.IOException;
  * Created by samuelsegal on 4/20/15.
  */
 public class PlayButton extends Button {
-    private String playBackFileName;
-    AudioPlaybackManager apm = null;
-    MediaStateHandler mediaStateHandler = null;
+    private String fileName;
+    private AudioPlaybackManager apm = null;
+    private MediaStateHandler mediaStateHandler = null;
+    private TrackVisualizerView trackVisualizerView = null;
     OnClickListener clicker = new OnClickListener() {
         public void onClick(View v) {
             if(apm != null) {
@@ -39,30 +41,24 @@ public class PlayButton extends Button {
 
     public PlayButton(Context context, AttributeSet attrs) {
         super(context, attrs);
-        prepareAttributes(context, attrs);
+        prepareAttributes(attrs);
         setOnClickListener(clicker);
     }
 
-    private void prepareAttributes(Context context, AttributeSet attrs) {
-        TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.PlayButton);
-
-        final int attrsCount = a.getIndexCount();
-        for (int i = 0; i < attrsCount; ++i)
-        {
-            int attr = a.getIndex(i);
-            switch (attr)
-            {
-                case R.styleable.PlayButton_playBackFileName:
-                    String fileName =  a.getString(attr);
-                    playTrack(fileName, context);
-                    break;
-            }
+    private void prepareAttributes(AttributeSet attrs) {
+        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.PlayButton);
+        try {
+            this.fileName = a.getString(R.styleable.PlayButton_playBackFileName);
+        }finally {
+            a.recycle();
         }
-        a.recycle();
     }
-
-    private void playTrack(String fileName, Context context) {
-        playBackFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
+    public void prepareTrack(TrackVisualizerView trackVisualizerView){
+        this.trackVisualizerView = trackVisualizerView;
+        prepareTrack();
+    }
+    public void prepareTrack() {
+        String playBackFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
         Log.d(NabstaApplication.LOG_TAG, String.format("Got playBackFileName attr: %s",playBackFileName));
 
         File f = new File(NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(), fileName);
@@ -79,7 +75,11 @@ public class PlayButton extends Button {
         }else{
             Log.d(NabstaApplication.LOG_TAG, String.format("Playback file exists: %s", f.getName()));
         }
-        mediaStateHandler = new MediaStateHandler(context, this, playBackFileName);
+        if(trackVisualizerView != null) {
+            mediaStateHandler = new MediaStateHandler(getContext(), this, playBackFileName, trackVisualizerView);
+        }else{
+            mediaStateHandler = new MediaStateHandler(getContext(), this, playBackFileName);
+        }
         apm = new AudioPlaybackManager(mediaStateHandler);
     }
 }

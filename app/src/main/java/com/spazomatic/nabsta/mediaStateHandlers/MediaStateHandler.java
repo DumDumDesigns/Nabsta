@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.Button;
 
 import com.spazomatic.nabsta.NabstaApplication;
+import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 /**
  * Created by samuelsegal on 4/23/15.
@@ -12,21 +13,30 @@ import com.spazomatic.nabsta.NabstaApplication;
 public class MediaStateHandler {
     private Button button;
     private Context context;
-    String fileName;
+    private String fileName;
     private boolean isComplete = true;
     private boolean isLooping;
     private boolean isOfMasterTrack;
     private static int trackCountForMaster;
-
+    private TrackVisualizerView trackVisualizerView;
     public MediaStateHandler(Context context, Button button, String fileName) {
         this.fileName = fileName;
         this.context = context;
         this.button = button;
     }
+    public MediaStateHandler(Context context, Button button, String fileName, TrackVisualizerView trackVisualizerView){
+        this(context, button, fileName);
+        this.trackVisualizerView = trackVisualizerView;
+    }
     public MediaStateHandler(Context context, Button button, String fileName, boolean isOfMasterTrack) {
         this(context, button, fileName);
         this.isOfMasterTrack = isOfMasterTrack;
     }
+
+    public TrackVisualizerView getTrackVisualizerView() {
+        return trackVisualizerView;
+    }
+
     public static synchronized void increaseTrackCountForMaster(){
         ++trackCountForMaster;
         Log.d(NabstaApplication.LOG_TAG, String.format("InCREASING TRACK COUNT: %d", trackCountForMaster));

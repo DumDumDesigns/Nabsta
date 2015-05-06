@@ -45,20 +45,12 @@ public class RecordButton extends Button {
         super(context, attrs);
 
         TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.RecordButton);
-
-        final int N = a.getIndexCount();
-        for (int i = 0; i < N; ++i)
-        {
-            int attr = a.getIndex(i);
-            switch (attr)
-            {
-                case R.styleable.RecordButton_recordFileName:
-                    String fileName =  a.getString(attr);
-                    recordTrack(fileName);
-                    break;
-            }
+        try {
+            String fileName = a.getString(R.styleable.RecordButton_recordFileName);
+            recordTrack(fileName);
+        }finally {
+            a.recycle();
         }
-        a.recycle();
         setOnClickListener(clicker);
     }
 

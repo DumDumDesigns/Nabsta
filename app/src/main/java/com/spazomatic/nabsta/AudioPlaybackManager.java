@@ -1,9 +1,11 @@
 package com.spazomatic.nabsta;
 
 import android.media.MediaPlayer;
+import android.media.audiofx.Visualizer;
 import android.util.Log;
 
 import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
+import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 import java.io.IOException;
 
@@ -13,10 +15,11 @@ import java.io.IOException;
 public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
 
 
-    private MediaPlayer mPlayer = null;
+    private MediaPlayer trackPlayer = null;
     private final String playBackFileName;
     private MediaStateHandler mediaStateHandler = null;
-//
+    private Visualizer trackVisualizer = null;
+    //private static final float VISUALIZER_HEIGHT_DIP = 50f;
     public AudioPlaybackManager(MediaStateHandler mediaStateHandler) {
         this.mediaStateHandler = mediaStateHandler;
         this.playBackFileName = mediaStateHandler.getFileName();
@@ -24,21 +27,32 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
     private void startPlaying() {
         try {
 
-            mPlayer = null;
-/*
-            // Request audio focus for playback
-            int result = am.requestAudioFocus(focusChangeListener,
-                    // Use the music stream.
-                    AudioManager.STREAM_MUSIC,
-                    // Request permanent focus.
-                    AudioManager.AUDIOFOCUS_GAIN);
-                    */
-            mPlayer = new MediaPlayer();
-            mPlayer.setOnErrorListener(this);
-            mPlayer.setOnPreparedListener(this);
-            mPlayer.setOnCompletionListener(this);
-            mPlayer.setDataSource(playBackFileName);
-            mPlayer.prepare();
+            trackPlayer = null;
+            trackPlayer = new MediaPlayer();
+            final TrackVisualizerView trackVisualizerView = mediaStateHandler.getTrackVisualizerView();
+            if(trackVisualizerView != null) {
+                trackVisualizer = new Visualizer(trackPlayer.getAudioSessionId());
+                trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+                trackVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                    @Override
+                    public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                        Log.d(NabstaApplication.LOG_TAG,"Updating Visualizer WafeForm");
+                        trackVisualizerView.updateVisualizer(waveform);
+                    }
+
+                    @Override
+                    public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                        Log.d(NabstaApplication.LOG_TAG,"Updating Visualizer FFT");
+                        trackVisualizerView.updateVisualizer(fft);
+                    }
+                }, Visualizer.getMaxCaptureRate() / 2, true, false);
+                trackVisualizer.setEnabled(true);
+            }
+            trackPlayer.setOnErrorListener(this);
+            trackPlayer.setOnPreparedListener(this);
+            trackPlayer.setOnCompletionListener(this);
+            trackPlayer.setDataSource(playBackFileName);
+            trackPlayer.prepare();
         } catch (IOException | IllegalStateException | IllegalArgumentException e) {
             Log.e(NabstaApplication.LOG_TAG, String.format("Playback Failed: %s: Error Message: %s ", playBackFileName, e.getMessage()));
         }/*finally{
@@ -49,8 +63,9 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             if(mediaStateHandler.isComplete()){
                 mediaStateHandler.setIsComplete(false);
                 return true;
+            } else{
+                return false;
             }
-            else return false;
 
     }
     public void callStopPlaying(){
@@ -60,10 +75,15 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
     private void stopPlaying() {
         Log.d(NabstaApplication.LOG_TAG, "stopPlayingCalled() called.");
-        if(mPlayer != null) {
-            mPlayer.stop();
-            mPlayer.release();
-            mPlayer = null;
+        if(trackPlayer != null) {
+            trackPlayer.stop();
+            trackPlayer.release();
+            trackPlayer = null;
+        }
+        if(trackVisualizer != null){
+            trackVisualizer.setEnabled(false);
+            trackVisualizer.release();
+            trackVisualizer = null;
         }
     }
 
@@ -95,6 +115,7 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
     public void onCompletion(MediaPlayer mp) {
         stopPlaying();
         mediaStateHandler.complete();
+
     }
 
     private String getErrorWhatCode(int what){
@@ -129,41 +150,4 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
         }
     }
 
-/*
-    private AudioManager.OnAudioFocusChangeListener focusChangeListener =
-            new AudioManager.OnAudioFocusChangeListener() {
-
-                public void onAudioFocusChange(int focusChange) {
-                    AudioManager am =
-                            (AudioManager)NabstaApplication.getInstance().getSystemService(Context.AUDIO_SERVICE);
-
-                    switch (focusChange) {
-                        case (AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) :
-                            // Lower the volume while ducking.
-                            mPlayer.setVolume(0.2f, 0.2f);
-                            break;
-
-                        case (AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) :
-                            //pause();
-                            break;
-
-                        case (AudioManager.AUDIOFOCUS_LOSS) :
-                            //stop();
-                            ComponentName component =
-                                    new ComponentName(AudioPlaybackManager.this,
-                                            MediaControlReceiver.class);
-                            am.unregisterMediaButtonEventReceiver(component);
-                            break;
-
-                        case (AudioManager.AUDIOFOCUS_GAIN) :
-                            // Return the volume to normal and resume if paused.
-                            mPlayer.setVolume(1f, 1f);
-                            mPlayer.start();
-                            break;
-
-                        default: break;
-                    }
-                }
-            };
-            */
 }

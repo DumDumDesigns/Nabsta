@@ -6,5 +6,8 @@
     <declare-styleable name="RecordButton">
         <attr name="recordFileName" format="string"/>
     </declare-styleable>
+    <declare-styleable name="TrackVisualizerView">
+
+    </declare-styleable>
 </resources>
 
