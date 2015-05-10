@@ -40,7 +40,7 @@ public class MainActivity extends Activity {
 
 
         MasterPlayButton masterPlayButton = (MasterPlayButton)findViewById(R.id.masterPlayBtn);
-        masterPlayButton.prepareMasterTrack();
+        masterPlayButton.prepareMasterTrack(trackVisualizerView,trackVisualizerView2,trackVisualizerView3);
     }
 
     @Override

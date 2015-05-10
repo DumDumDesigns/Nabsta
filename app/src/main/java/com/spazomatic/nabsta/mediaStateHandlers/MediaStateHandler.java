@@ -28,8 +28,8 @@ public class MediaStateHandler {
         this(context, button, fileName);
         this.trackVisualizerView = trackVisualizerView;
     }
-    public MediaStateHandler(Context context, Button button, String fileName, boolean isOfMasterTrack) {
-        this(context, button, fileName);
+    public MediaStateHandler(Context context, Button button, String fileName, TrackVisualizerView trackVisualizerView,boolean isOfMasterTrack) {
+        this(context, button, fileName,trackVisualizerView);
         this.isOfMasterTrack = isOfMasterTrack;
     }
 

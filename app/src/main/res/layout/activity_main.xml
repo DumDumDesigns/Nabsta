@@ -67,7 +67,7 @@
             nabsta:recordFileName="@string/track3_3gp"/>
         <com.spazomatic.nabsta.views.TrackVisualizerView
             android:id="@+id/visualizer3"
-            android:layout_width="50dp"
+            android:layout_width="fill_parent"
             android:layout_height="50dp" />
     </LinearLayout>
 

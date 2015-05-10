@@ -29,25 +29,7 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
             trackPlayer = null;
             trackPlayer = new MediaPlayer();
-            final TrackVisualizerView trackVisualizerView = mediaStateHandler.getTrackVisualizerView();
-            if(trackVisualizerView != null) {
-                trackVisualizer = new Visualizer(trackPlayer.getAudioSessionId());
-                trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
-                trackVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
-                    @Override
-                    public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
-                        Log.d(NabstaApplication.LOG_TAG,"Updating Visualizer WafeForm");
-                        trackVisualizerView.updateVisualizer(waveform);
-                    }
 
-                    @Override
-                    public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-                        Log.d(NabstaApplication.LOG_TAG,"Updating Visualizer FFT");
-                        trackVisualizerView.updateVisualizer(fft);
-                    }
-                }, Visualizer.getMaxCaptureRate() / 2, true, false);
-                trackVisualizer.setEnabled(true);
-            }
             trackPlayer.setOnErrorListener(this);
             trackPlayer.setOnPreparedListener(this);
             trackPlayer.setOnCompletionListener(this);
@@ -84,6 +66,7 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             trackVisualizer.setEnabled(false);
             trackVisualizer.release();
             trackVisualizer = null;
+
         }
     }
 
@@ -105,6 +88,30 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
     @Override
     public void onPrepared(MediaPlayer mp) {
+
+        final TrackVisualizerView trackVisualizerView = mediaStateHandler.getTrackVisualizerView();
+        if(trackVisualizerView != null) {
+            trackVisualizerView.clearCanvas();
+            trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
+
+            trackVisualizer = new Visualizer(trackPlayer.getAudioSessionId());
+            trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+            trackVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+                @Override
+                public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                    //Log.d(NabstaApplication.LOG_TAG,String.format("Track Duration: %d", trackPlayer.getDuration()));
+                    trackVisualizerView.updateVisualizer(waveform);
+                }
+
+                @Override
+                public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                    Log.d(NabstaApplication.LOG_TAG,"Updating Visualizer FFT");
+                    trackVisualizerView.updateVisualizer(fft);
+                }
+            }, Visualizer.getMaxCaptureRate() / 2, true, false);
+            trackVisualizer.setEnabled(true);
+        }
+
         mp.setLooping(mediaStateHandler.isLooping());
         mp.start();
         mediaStateHandler.begin();

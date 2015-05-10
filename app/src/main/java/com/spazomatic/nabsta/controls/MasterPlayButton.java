@@ -38,12 +38,12 @@ public class MasterPlayButton extends Button {
         setOnClickListener(clicker);
     }
 
-    public void prepareMasterTrack( ) {
+    public void prepareMasterTrack(TrackVisualizerView...trackVisualizerViews ) {
 
         apmAllTracks = new AudioPlaybackManager[NabstaApplication.ALL_TRACKS.length];
         for(int i = 0; i < NabstaApplication.ALL_TRACKS.length; i++ ){
             Log.d(NabstaApplication.LOG_TAG, String.format("CREATING MEDIASTATE HANDLER AND PLAYYBACKMANAGER FOR: %s", NabstaApplication.ALL_TRACKS));
-            MediaStateHandler mediaStateHandler = new MediaStateHandler(getContext(), this, NabstaApplication.ALL_TRACKS[i], true);
+            MediaStateHandler mediaStateHandler = new MediaStateHandler(getContext(), this, NabstaApplication.ALL_TRACKS[i], trackVisualizerViews[i], true);
             Log.d(NabstaApplication.LOG_TAG,"MEDIASTATEHANDLER CREATED");
             AudioPlaybackManager apm = new AudioPlaybackManager(mediaStateHandler);
             Log.d(NabstaApplication.LOG_TAG,"AUDIOPLAYBACKMANAGER CREATED");
