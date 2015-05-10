@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -18,12 +17,13 @@ import com.spazomatic.nabsta.NabstaApplication;
 public class TrackVisualizerView extends View {
     private byte[] mBytes;
     private float[] mPoints;
-    private float[] allPoints = new float[1];
-    private Rect mRect = new Rect();
+    private float[] allPoints;
+
     private int trackDuration;
     private Paint mForePaint = new Paint();
-    private int measureBegining;
-    private int measureLenth;
+    private int measureBeginning, measureEnd, measureHeight;
+    private int measureLength = 2;
+    private int destPoint, newSize;
     public TrackVisualizerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
@@ -31,9 +31,10 @@ public class TrackVisualizerView extends View {
 
     private void init() {
         mBytes = null;
-        measureBegining =  0;
-        measureLenth = 10;
-        mRect.set(0,0,0,0);
+        allPoints = new float[0];
+        measureBeginning = 0;
+        measureEnd = measureLength;
+
         mForePaint.setStrokeWidth(2f);
         mForePaint.setAntiAlias(true);
         mForePaint.setColor(Color.BLUE);
@@ -42,11 +43,11 @@ public class TrackVisualizerView extends View {
 
     public void updateVisualizer(byte[] bytes) {
         mBytes = bytes;
-        measureBegining+=measureLenth;
-        if(mBytes!=null) {
-            invalidate();
-            mRect.set(measureBegining, getTop(), measureBegining + measureLenth, getBottom());
-        }
+        measureBeginning += measureLength;
+        measureEnd += measureLength;
+        measureHeight=getBottom();
+        invalidate();
+
     }
 
     @Override
@@ -57,28 +58,29 @@ public class TrackVisualizerView extends View {
                 return;
             }
             if (mPoints == null || mPoints.length < mBytes.length * 4) {
-                mPoints = new float[mBytes.length*4];
+                mPoints = new float[mBytes.length * 4];
             }
-            int destPoint = allPoints.length-1;
-            int newSize = allPoints.length+mPoints.length;
-            allocateAllPoints(allPoints,newSize);
+
+            destPoint = allPoints.length;
+            newSize = allPoints.length+mPoints.length;
+            allocateAllPoints(allPoints, newSize);
 
             for (int i = 0; i < mBytes.length-1; i++) {
-                mPoints[i*4] = mRect.left + (i / (mBytes.length - 1));
-                mPoints[i *4 + 1] = mRect.height() / 2
-                        + ((byte) (mBytes[i] + 128)) * (mRect.height() / 2) / 128;
-                mPoints[i *4 + 2] = mRect.right + ( (i + 1) / (mBytes.length - 1));
-                mPoints[i *4 + 3] = mRect.height() / 2
-                        + ((byte) (mBytes[i + 1] + 128)) * (mRect.height() / 2) / 128;
+                mPoints[i*4] = measureBeginning + (i / (mBytes.length - 1));
+                mPoints[i *4 + 1] = measureHeight / 2
+                        + ((byte) (mBytes[i] + 128)) * (measureHeight / 2) / 128;
+                mPoints[i *4 + 2] = measureEnd + ( (i + 1) / (mBytes.length - 1));
+                mPoints[i *4 + 3] = measureHeight / 2
+                        + ((byte) (mBytes[i + 1] + 128)) * (measureHeight / 2) / 128;
             }
-            System.arraycopy(mPoints, 0, allPoints, destPoint, mPoints.length);
 
+            System.arraycopy(mPoints, 0, allPoints, destPoint, mPoints.length);
             canvas.drawLines(allPoints, mForePaint);
 
         }catch(Exception e){
             Log.e(NabstaApplication.LOG_TAG, String.format(
-                "Error in onDraw - Error Message: %s: Cause: %s: stackTrace:",
-                e.getMessage(),e.getCause()),e
+                            "Error in onDraw - Error Message: %s: Cause: %s: stackTrace:",
+                            e.getMessage(),e.getCause()),e
             );
         }
     }
@@ -87,10 +89,11 @@ public class TrackVisualizerView extends View {
         this.trackDuration = trackDuration;
     }
     public void clearCanvas(){
-        allPoints = new float[1];
-        measureBegining = 0;
+        allPoints = new float[0];
+        measureBeginning = 0;
+        measureEnd = measureLength;
     }
-    private  void allocateAllPoints (float[] oldArray, int newSize) {
+    private void allocateAllPoints (float[] oldArray, int newSize) {
         allPoints = new float[newSize];
         System.arraycopy(oldArray, 0, allPoints, 0, oldArray.length);
     }
