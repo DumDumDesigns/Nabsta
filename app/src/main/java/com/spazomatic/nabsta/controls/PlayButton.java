@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.spazomatic.nabsta.AudioPlaybackManager;
+import com.spazomatic.nabsta.AudioRecordManager;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
@@ -22,19 +23,37 @@ import java.io.IOException;
 public class PlayButton extends Button {
     private String fileName;
     private AudioPlaybackManager apm = null;
+    private AudioRecordManager arm = null;
     private MediaStateHandler mediaStateHandler = null;
     private TrackVisualizerView trackVisualizerView = null;
     OnClickListener clicker = new OnClickListener() {
         public void onClick(View v) {
-            if(apm != null) {
+            //TODO: UI Design has changed, revisit again to simplify the coupling of record and playback buttons
+            if(mediaStateHandler.isInRecordMode()){
+                if(arm == null) {
+                    apm = null;
+                    arm = new AudioRecordManager(mediaStateHandler.getFileName());
+                }
+                if (!arm.isRecording()) {
+                    arm.setIsRecording(true);
+                    setSelected(true);
+                    Thread recordThread = new Thread(arm);
+                    recordThread.start();
+                } else {
+                    arm.setIsRecording(false);
+                    setSelected(false);
+                }
+            }else {
+                if(apm == null){
+                    arm = null;
+                    apm = new AudioPlaybackManager(mediaStateHandler);
+                }
                 if (apm.isReady()) {
                     Thread playbackThread = new Thread(apm);
                     playbackThread.start();
                 } else {
                     apm.callStopPlaying();
                 }
-            }else{
-                Log.d(NabstaApplication.LOG_TAG, "PlayBackManager is null.");
             }
         }
     };
@@ -53,11 +72,12 @@ public class PlayButton extends Button {
             a.recycle();
         }
     }
-    public void prepareTrack(TrackVisualizerView trackVisualizerView){
+
+    public void prepareTrack(TrackVisualizerView trackVisualizerView, RecordButton recordButton){
         this.trackVisualizerView = trackVisualizerView;
-        prepareTrack();
+        prepareTrack(recordButton);
     }
-    public void prepareTrack() {
+    public void prepareTrack(RecordButton recordButton) {
         String playBackFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
         Log.d(NabstaApplication.LOG_TAG, String.format("Got playBackFileName attr: %s",playBackFileName));
 
@@ -70,16 +90,17 @@ public class PlayButton extends Button {
             try {
                 f.createNewFile();
             } catch (IOException e) {
-                Log.e(NabstaApplication.LOG_TAG, String.format("Error Creating File: %s Error Message: %s",f,e.getMessage()));
+                Log.e(NabstaApplication.LOG_TAG, String.format("Error Creating File: %s Error Message: %s",f,e.getMessage()),e);
             }
         }else{
             Log.d(NabstaApplication.LOG_TAG, String.format("Playback file exists: %s", f.getName()));
         }
-        if(trackVisualizerView != null) {
-            mediaStateHandler = new MediaStateHandler(getContext(), this, playBackFileName, trackVisualizerView);
+        if(trackVisualizerView != null && recordButton != null) {
+            mediaStateHandler = new MediaStateHandler(getContext(), this, playBackFileName, trackVisualizerView, recordButton);
         }else{
             mediaStateHandler = new MediaStateHandler(getContext(), this, playBackFileName);
         }
-        apm = new AudioPlaybackManager(mediaStateHandler);
+
+
     }
 }

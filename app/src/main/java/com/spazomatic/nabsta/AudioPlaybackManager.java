@@ -14,7 +14,6 @@ import java.io.IOException;
  */
 public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
 
-
     private MediaPlayer trackPlayer = null;
     private final String playBackFileName;
     private MediaStateHandler mediaStateHandler = null;
@@ -29,17 +28,17 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
             trackPlayer = null;
             trackPlayer = new MediaPlayer();
-
             trackPlayer.setOnErrorListener(this);
             trackPlayer.setOnPreparedListener(this);
             trackPlayer.setOnCompletionListener(this);
             trackPlayer.setDataSource(playBackFileName);
             trackPlayer.prepare();
+
         } catch (IOException | IllegalStateException | IllegalArgumentException e) {
-            Log.e(NabstaApplication.LOG_TAG, String.format("Playback Failed: %s: Error Message: %s ", playBackFileName, e.getMessage()));
-        }/*finally{
-            stopPlaying();
-        }*/
+            Log.e(NabstaApplication.LOG_TAG, String.format(
+                    "Playback Failed: %s: Error Message: %s ",
+                    playBackFileName, e.getMessage()), e);
+        }
     }
     public boolean isReady(){
             if(mediaStateHandler.isComplete()){
@@ -66,7 +65,6 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             trackVisualizer.setEnabled(false);
             trackVisualizer.release();
             trackVisualizer = null;
-
         }
     }
 
@@ -76,15 +74,12 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
         startPlaying();
     }
 
-
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Log.e(NabstaApplication.LOG_TAG, String.format("MediaPlayer.OnErrorListener  what: %s: extra: %s", getErrorWhatCode(what), getErrorExtraCode(extra)));
         stopPlaying();
         return true;
     }
-
-
 
     @Override
     public void onPrepared(MediaPlayer mp) {
@@ -93,23 +88,30 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
         if(trackVisualizerView != null) {
             trackVisualizerView.clearCanvas();
             trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
-
             trackVisualizer = new Visualizer(trackPlayer.getAudioSessionId());
             trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
-            trackVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+
+            //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
+            int resultOfSetDataCapture = trackVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
                 @Override
                 public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
-                    //Log.d(NabstaApplication.LOG_TAG,String.format("Track Duration: %d", trackPlayer.getDuration()));
+                    //TODO: AddMaster trackView
                     trackVisualizerView.updateVisualizer(waveform);
                 }
 
                 @Override
                 public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-                    Log.d(NabstaApplication.LOG_TAG,"Updating Visualizer FFT");
                     trackVisualizerView.updateVisualizer(fft);
                 }
-            }, Visualizer.getMaxCaptureRate() / 2, true, false);
-            trackVisualizer.setEnabled(true);
+            }, Visualizer.getMaxCaptureRate(), true, false);
+            if(Visualizer.SUCCESS == resultOfSetDataCapture) {
+                trackVisualizer.setEnabled(true);
+            }else{
+                //TODO: Handle error for end user.
+                Log.e(NabstaApplication.LOG_TAG,String.format(
+                        "Error setting dataCapture Listener: %d",
+                        resultOfSetDataCapture));
+            }
         }
 
         mp.setLooping(mediaStateHandler.isLooping());
@@ -122,7 +124,6 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
     public void onCompletion(MediaPlayer mp) {
         stopPlaying();
         mediaStateHandler.complete();
-
     }
 
     private String getErrorWhatCode(int what){

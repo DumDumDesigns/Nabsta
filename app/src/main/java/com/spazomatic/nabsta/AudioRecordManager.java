@@ -8,7 +8,7 @@ import java.io.IOException;
 /**
  * Created by samuelsegal on 4/16/15.
  */
-public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListener{
+public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListener, MediaRecorder.OnInfoListener{
     private volatile boolean isRecording;
     private String recordFileName;
     private MediaRecorder mRecorder = null;
@@ -16,7 +16,6 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
     public AudioRecordManager(String recordFileName) {
         this.recordFileName = recordFileName;
     }
-
 
     public boolean isRecording() {
         return isRecording;
@@ -30,6 +29,7 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
         mRecorder = null;
         mRecorder = new MediaRecorder();
         mRecorder.setOnErrorListener(this);
+        mRecorder.setOnInfoListener(this);
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mRecorder.setOutputFile(recordFileName);
@@ -38,7 +38,7 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
         try {
             mRecorder.prepare();
             mRecorder.start();
-            Log.d(NabstaApplication.LOG_TAG, "Recording: " + recordFileName);
+            Log.d(NabstaApplication.LOG_TAG, String.format("Recording: %s",recordFileName));
 
             while(isRecording) {
                 if(!isRecording()){
@@ -47,19 +47,19 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
             }
 
         } catch (IOException e) {
-            Log.e(NabstaApplication.LOG_TAG, "Recording failed: " + e.getCause());
-            e.printStackTrace();
+            Log.e(NabstaApplication.LOG_TAG, String.format("Recording failed: %s",e.getCause()),e);
         }finally {
             stopRecording();
         }
     }
 
     private void stopRecording() {
-        Log.d(NabstaApplication.LOG_TAG, "Stop Recording: " + recordFileName);
-        mRecorder.stop();
-        mRecorder.release();
-        mRecorder = null;
-
+        Log.d(NabstaApplication.LOG_TAG, String.format("Stop Recording: %s", recordFileName));
+        if(mRecorder != null) {
+            mRecorder.stop();
+            mRecorder.release();
+            mRecorder = null;
+        }
     }
 
     @Override
@@ -68,13 +68,18 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
         try {
             startRecording();
         }catch(Exception e){
-            Log.d(NabstaApplication.LOG_TAG, e.getStackTrace().toString());
+            Log.d(NabstaApplication.LOG_TAG, String.format("Error in run of AudioRecordManager: %s",e.getMessage()), e);
         }
     }
 
     @Override
     public void onError(MediaRecorder mr, int what, int extra) {
-        Log.e(NabstaApplication.LOG_TAG, "MediaPlayer.OnErrorListener  what: " + what + " extra: " + extra);
+        Log.e(NabstaApplication.LOG_TAG, String.format("MediaPlayer.OnErrorListener  what: %d: extra: %d", what, extra));
         stopRecording();
+    }
+
+    @Override
+    public void onInfo(MediaRecorder mr, int what, int extra) {
+        Log.e(NabstaApplication.LOG_TAG, String.format("MediaPlayer.OnInfoListener  what: %d: extra: %d", what, extra));
     }
 }

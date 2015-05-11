@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/record_50_red"
+    <item android:drawable="@drawable/mic_50_red"
         android:state_pressed="true" />
-    <item android:drawable="@drawable/pause_50"
+    <item android:drawable="@drawable/mic_50_red"
         android:state_selected="true"/>
-    <item android:drawable="@drawable/record_50_red" />
+    <item android:drawable="@drawable/no_mic_50_grey" />
 </selector>

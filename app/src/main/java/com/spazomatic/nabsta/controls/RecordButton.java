@@ -10,6 +10,7 @@ import android.widget.Button;
 import com.spazomatic.nabsta.AudioRecordManager;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
+import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,24 +20,18 @@ import java.io.IOException;
  */
 public class RecordButton extends Button {
     private String recordFileName;
-
+    private MediaStateHandler mediaStateHandler;
     AudioRecordManager arm = null;
 
 
     OnClickListener clicker = new OnClickListener() {
         public void onClick(View v) {
-            if(arm != null) {
-                if (!arm.isRecording()) {
-                    arm.setIsRecording(true);
-                    setSelected(true);
-                    Thread recordThread = new Thread(arm);
-                    recordThread.start();
-                } else {
-                    arm.setIsRecording(false);
-                    setSelected(false);
-                }
-            }else{
-                Log.d(NabstaApplication.LOG_TAG, "AudioRecordManager is null.");
+            if(mediaStateHandler.isInRecordMode()){
+                mediaStateHandler.setIsInRecordMode(false);
+                setSelected(false);
+            }else {
+                mediaStateHandler.setIsInRecordMode(true);
+                setSelected(true);
             }
         }
     };
@@ -55,8 +50,9 @@ public class RecordButton extends Button {
     }
 
     private void recordTrack(String fileName) {
+
         recordFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
-        Log.d(NabstaApplication.LOG_TAG, "Got recordFileName attr: " + recordFileName);
+        Log.d(NabstaApplication.LOG_TAG, String.format("Got recordFileName attr: %s",recordFileName));
         checkCreateFile(fileName);
         arm = new AudioRecordManager(recordFileName);
     }
@@ -68,14 +64,24 @@ public class RecordButton extends Button {
         f.setWritable(true);
 
         if(!f.exists()) {
-            Log.d(NabstaApplication.LOG_TAG,"Creating new record file: " + f.getName());
+            Log.d(NabstaApplication.LOG_TAG,String.format("Creating new record file: %s",f.getName()));
             try {
                 f.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(NabstaApplication.LOG_TAG,String.format(
+                        "Error creating file %s with error message %s",
+                        f.getAbsolutePath().toString(),e.getMessage()), e);
             }
         }else{
-            Log.d(NabstaApplication.LOG_TAG,"Record file exists: " + f.getName() );
+            Log.d(NabstaApplication.LOG_TAG,String.format("Record file exists: %s", f.getName()));
         }
+    }
+
+    public MediaStateHandler getMediaStateHandler() {
+        return mediaStateHandler;
+    }
+
+    public void setMediaStateHandler(MediaStateHandler mediaStateHandler) {
+        this.mediaStateHandler = mediaStateHandler;
     }
 }

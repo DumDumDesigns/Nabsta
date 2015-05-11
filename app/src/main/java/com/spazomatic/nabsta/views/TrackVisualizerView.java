@@ -22,8 +22,8 @@ public class TrackVisualizerView extends View {
     private int trackDuration;
     private Paint mForePaint = new Paint();
     private int measureBeginning, measureEnd, measureHeight;
-    private int measureLength = 2;
-    private int destPoint, newSize;
+    private int measureLength = 5;
+
     public TrackVisualizerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
@@ -35,7 +35,7 @@ public class TrackVisualizerView extends View {
         measureBeginning = 0;
         measureEnd = measureLength;
 
-        mForePaint.setStrokeWidth(2f);
+        mForePaint.setStrokeWidth(1f);
         mForePaint.setAntiAlias(true);
         mForePaint.setColor(Color.BLUE);
         setBackgroundColor(Color.CYAN);
@@ -43,11 +43,7 @@ public class TrackVisualizerView extends View {
 
     public void updateVisualizer(byte[] bytes) {
         mBytes = bytes;
-        measureBeginning += measureLength;
-        measureEnd += measureLength;
-        measureHeight=getBottom();
         invalidate();
-
     }
 
     @Override
@@ -61,26 +57,29 @@ public class TrackVisualizerView extends View {
                 mPoints = new float[mBytes.length * 4];
             }
 
-            destPoint = allPoints.length;
-            newSize = allPoints.length+mPoints.length;
+            int destPoint = allPoints.length;
+            int newSize = allPoints.length + mPoints.length;
             allocateAllPoints(allPoints, newSize);
 
             for (int i = 0; i < mBytes.length-1; i++) {
                 mPoints[i*4] = measureBeginning + (i / (mBytes.length - 1));
                 mPoints[i *4 + 1] = measureHeight / 2
                         + ((byte) (mBytes[i] + 128)) * (measureHeight / 2) / 128;
-                mPoints[i *4 + 2] = measureEnd + ( (i + 1) / (mBytes.length - 1));
+                mPoints[i *4 + 2] = measureEnd + ( (i+1) / (mBytes.length - 1));
                 mPoints[i *4 + 3] = measureHeight / 2
                         + ((byte) (mBytes[i + 1] + 128)) * (measureHeight / 2) / 128;
             }
 
             System.arraycopy(mPoints, 0, allPoints, destPoint, mPoints.length);
             canvas.drawLines(allPoints, mForePaint);
+            measureBeginning += measureLength;
+            measureEnd += measureLength;
+            measureHeight=getBottom();
 
         }catch(Exception e){
             Log.e(NabstaApplication.LOG_TAG, String.format(
-                            "Error in onDraw - Error Message: %s: Cause: %s: stackTrace:",
-                            e.getMessage(),e.getCause()),e
+                "Error in onDraw - Error Message: %s: Cause: %s: stackTrace:",
+                e.getMessage(),e.getCause()),e
             );
         }
     }
