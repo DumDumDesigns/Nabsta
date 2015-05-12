@@ -100,19 +100,30 @@ public class MediaStateHandler {
     public void complete(){
         Log.d(NabstaApplication.LOG_TAG, "Media state handler completing.");
         isComplete = true;
-        if(isOfMasterTrack){
-            if (decreaseTrackCountForMaster() == 0) {
+        try {
+            if (isOfMasterTrack) {
+                if (decreaseTrackCountForMaster() == 0) {
+                    button.setSelected(false);
+                }
+            } else {
                 button.setSelected(false);
             }
-        }else{
-            button.setSelected(false);
+        }catch(Exception e){
+            Log.e(NabstaApplication.LOG_TAG,String.format("Error settingSelect %s",e.getMessage()),e);
         }
     }
 
     public void begin() {
+        Log.d(NabstaApplication.LOG_TAG,"BEGINNNNNNNNNN");
+        Log.d(NabstaApplication.LOG_TAG,String.format("Button: %s",button.toString()));
         if(isOfMasterTrack){
             increaseTrackCountForMaster();
         }
-        button.setSelected(true);
+        try {
+            button.setSelected(true);
+        }catch(Exception e){
+            Log.e(NabstaApplication.LOG_TAG,String.format("Error settingSelect %s",e.getMessage()),e);
+        }
+
     }
 }

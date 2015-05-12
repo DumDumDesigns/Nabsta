@@ -1,5 +1,8 @@
 package com.spazomatic.nabsta;
 
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.audiofx.Visualizer;
 import android.util.Log;
@@ -7,6 +10,9 @@ import android.util.Log;
 import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
 import com.spazomatic.nabsta.views.TrackVisualizerView;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -14,40 +20,32 @@ import java.io.IOException;
  */
 public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
 
+
     private MediaPlayer trackPlayer = null;
     private final String playBackFileName;
     private MediaStateHandler mediaStateHandler = null;
     private Visualizer trackVisualizer = null;
+    private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+    private static final int FREQUENCY = 44100;
     //private static final float VISUALIZER_HEIGHT_DIP = 50f;
     public AudioPlaybackManager(MediaStateHandler mediaStateHandler) {
         this.mediaStateHandler = mediaStateHandler;
         this.playBackFileName = mediaStateHandler.getFileName();
+
     }
     private void startPlaying() {
-        try {
-
-            trackPlayer = null;
-            trackPlayer = new MediaPlayer();
-            trackPlayer.setOnErrorListener(this);
-            trackPlayer.setOnPreparedListener(this);
-            trackPlayer.setOnCompletionListener(this);
-            trackPlayer.setDataSource(playBackFileName);
-            trackPlayer.prepare();
-
-        } catch (IOException | IllegalStateException | IllegalArgumentException e) {
-            Log.e(NabstaApplication.LOG_TAG, String.format(
-                    "Playback Failed: %s: Error Message: %s ",
-                    playBackFileName, e.getMessage()), e);
-        }
+        //playWithMediaPlayer();
+        playWithAudioTrack();
     }
     public boolean isReady(){
             if(mediaStateHandler.isComplete()){
                 mediaStateHandler.setIsComplete(false);
+                mediaStateHandler.begin();
                 return true;
             } else{
+                mediaStateHandler.complete();
                 return false;
             }
-
     }
     public void callStopPlaying(){
         mediaStateHandler.complete();
@@ -74,21 +72,154 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
         startPlaying();
     }
 
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        Log.e(NabstaApplication.LOG_TAG, String.format("MediaPlayer.OnErrorListener  what: %s: extra: %s", getErrorWhatCode(what), getErrorExtraCode(extra)));
-        stopPlaying();
-        return true;
+    private void playWithAudioTrack(){
+
+        AudioTrack audioTrack = new AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                FREQUENCY,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                MIN_BUFF_SIZE,
+                AudioTrack.MODE_STREAM);
+
+        byte[] track = convertStreamToByteArray(playBackFileName);
+
+        byte[] output = new byte[track.length];
+        setUpVisualizer(audioTrack.getAudioSessionId());
+        audioTrack.play();
+
+        for(int i=0; i < output.length; i++){
+
+            float sampleFloat =  track[i] / 128.0f;
+            if (sampleFloat > 1.0f) sampleFloat = 1.0f;
+            if (sampleFloat < -1.0f) sampleFloat = -1.0f;
+            byte outputSample = (byte)(sampleFloat * 128.0f);
+            output[i] = outputSample;
+
+        }
+        int numberOfBytesWritten = audioTrack.write(output, 0, output.length);
+        if(numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
+                numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
+                numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT){
+            Log.e(NabstaApplication.LOG_TAG,"Error Writing bytes to Mix Track");
+        }
+        Log.d(NabstaApplication.LOG_TAG,String.format(
+                "Wrote %d bytes to Track %s.",numberOfBytesWritten,playBackFileName
+        ));
+
+        if(audioTrack != null) {
+            audioTrack.release();
+            trackVisualizer.setEnabled(false);
+            trackVisualizer.release();
+            trackVisualizer = null;
+        }
+    }
+    private void playWithMediaPlayer(){
+        try {
+
+            trackPlayer = null;
+            trackPlayer = new MediaPlayer();
+            trackPlayer.setOnErrorListener(this);
+            trackPlayer.setOnPreparedListener(this);
+            trackPlayer.setOnCompletionListener(this);
+            trackPlayer.setDataSource(playBackFileName);
+            trackPlayer.prepare();
+
+        } catch (IOException | IllegalStateException | IllegalArgumentException e) {
+            Log.e(NabstaApplication.LOG_TAG, String.format(
+                    "Playback Failed: %s: Error Message: %s ",
+                    playBackFileName, e.getMessage()), e);
+        }
     }
 
-    @Override
-    public void onPrepared(MediaPlayer mp) {
+    private void mixSound() {
 
+        AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, FREQUENCY, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, MIN_BUFF_SIZE, AudioTrack.MODE_STREAM);
+
+        byte[] track1 = convertStreamToByteArray(NabstaApplication.ALL_TRACKS[0]);
+
+        byte[] track2 = convertStreamToByteArray(NabstaApplication.ALL_TRACKS[1]);
+
+        byte[] output = new byte[track1.length];
+        setUpVisualizer(audioTrack.getAudioSessionId());
+        audioTrack.play();
+
+        for(int i=0; i < output.length; i++){
+
+            float sampleFloat1 = track1.length > i ? track1[i] / 128.0f : 0.0f;
+            float sampleFloat2 = track2.length > i ? track2[i] / 128.0f : 0.0f;
+
+            float mixed = sampleFloat1 + sampleFloat2;
+            // reduce volume
+            mixed *= 0.8;
+            if (mixed > 1.0f) mixed = 1.0f;
+            if (mixed < -1.0f) mixed = -1.0f;
+
+            byte outputSample = (byte)(mixed * 128.0f);
+            output[i] = outputSample;
+
+        }
+
+        int numberOfBytesWritten = audioTrack.write(output, 0, output.length);
+        if(numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
+                numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
+                numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT){
+            Log.e(NabstaApplication.LOG_TAG,"Error Writing bytes to Mix Track");
+
+        }
+        if(audioTrack != null) {
+            audioTrack.release();
+        }
+
+    }
+
+    private byte[] convertStreamToByteArray(String musacFile) {
+        byte [] soundBytes = null;
+        ByteArrayOutputStream bos = null;
+        FileInputStream fis = null;
+        BufferedInputStream bis = null;
+
+        try {
+            bos = new ByteArrayOutputStream();
+            fis = new FileInputStream(musacFile);
+            bis = new BufferedInputStream(fis);
+            byte[] buffer = new byte[MIN_BUFF_SIZE/2];
+
+            while(bis.read(buffer) != - 1){
+                bos.write(buffer);
+            }
+            soundBytes = bos.toByteArray();
+
+        } catch (IOException e) {
+            Log.e(NabstaApplication.LOG_TAG,String.format(
+                    "Error reading file %s", musacFile),e);
+        }finally{
+            try {
+                if(bis != null) {
+                    bis.close();
+                }
+                if(fis != null) {
+                    fis.close();
+                }
+                if(bos != null) {
+                    bos.close();
+                }
+            } catch (IOException e) {
+                Log.e(NabstaApplication.LOG_TAG,String.format(
+                        "Error Closing Stream with message: %s",
+                        e.getMessage()),e);
+            }
+        }
+
+        return soundBytes;
+    }
+
+    private void setUpVisualizer(int audioSessionID){
         final TrackVisualizerView trackVisualizerView = mediaStateHandler.getTrackVisualizerView();
         if(trackVisualizerView != null) {
             trackVisualizerView.clearCanvas();
-            trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
-            trackVisualizer = new Visualizer(trackPlayer.getAudioSessionId());
+            //trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
+            trackVisualizer = new Visualizer(audioSessionID);
             trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
 
             //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
@@ -113,7 +244,17 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
                         resultOfSetDataCapture));
             }
         }
+    }
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        Log.e(NabstaApplication.LOG_TAG, String.format("MediaPlayer.OnErrorListener  what: %s: extra: %s", getErrorWhatCode(what), getErrorExtraCode(extra)));
+        stopPlaying();
+        return true;
+    }
 
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        setUpVisualizer(trackPlayer.getAudioSessionId());
         mp.setLooping(mediaStateHandler.isLooping());
         mp.start();
         mediaStateHandler.begin();

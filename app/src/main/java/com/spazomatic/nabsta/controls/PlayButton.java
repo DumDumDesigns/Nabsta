@@ -28,32 +28,36 @@ public class PlayButton extends Button {
     private TrackVisualizerView trackVisualizerView = null;
     OnClickListener clicker = new OnClickListener() {
         public void onClick(View v) {
-            //TODO: UI Design has changed, revisit again to simplify the coupling of record and playback buttons
-            if(mediaStateHandler.isInRecordMode()){
-                if(arm == null) {
-                    apm = null;
-                    arm = new AudioRecordManager(mediaStateHandler.getFileName());
-                }
-                if (!arm.isRecording()) {
-                    arm.setIsRecording(true);
-                    setSelected(true);
-                    Thread recordThread = new Thread(arm);
-                    recordThread.start();
+            try {
+                //TODO: UI Design has changed, revisit again to simplify the coupling of record and playback buttons
+                if (mediaStateHandler.isInRecordMode()) {
+                    if (arm == null) {
+                        apm = null;
+                        arm = new AudioRecordManager(mediaStateHandler.getFileName());
+                    }
+                    if (!arm.isRecording()) {
+                        arm.setIsRecording(true);
+                        setSelected(true);
+                        Thread recordThread = new Thread(arm);
+                        recordThread.start();
+                    } else {
+                        arm.setIsRecording(false);
+                        setSelected(false);
+                    }
                 } else {
-                    arm.setIsRecording(false);
-                    setSelected(false);
+                    if (apm == null) {
+                        arm = null;
+                        apm = new AudioPlaybackManager(mediaStateHandler);
+                    }
+                    if (apm.isReady()) {
+                        Thread playbackThread = new Thread(apm);
+                        playbackThread.start();
+                    } else {
+                        apm.callStopPlaying();
+                    }
                 }
-            }else {
-                if(apm == null){
-                    arm = null;
-                    apm = new AudioPlaybackManager(mediaStateHandler);
-                }
-                if (apm.isReady()) {
-                    Thread playbackThread = new Thread(apm);
-                    playbackThread.start();
-                } else {
-                    apm.callStopPlaying();
-                }
+            }catch(Exception e){
+                Log.e(NabstaApplication.LOG_TAG,String.format("Error settingSelect %s",e.getMessage()),e);
             }
         }
     };
@@ -79,24 +83,43 @@ public class PlayButton extends Button {
     }
     public void prepareTrack(RecordButton recordButton) {
         String playBackFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
-        Log.d(NabstaApplication.LOG_TAG, String.format("Got playBackFileName attr: %s",playBackFileName));
+        Log.d(NabstaApplication.LOG_TAG, String.format(
+                "Got playBackFileName attr: %s",playBackFileName));
 
         File f = new File(NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(), fileName);
-        f.setExecutable(true);
-        f.setReadable(true);
-        f.setWritable(true);
+        /*
+        if(f.setExecutable(true) == false){
+            Log.e(NabstaApplication.LOG_TAG,String.format(
+                    "Error setting Executable Permission for file %s",f.getAbsolutePath()));
+        }
+        if(!f.setReadable(true)){
+            Log.e(NabstaApplication.LOG_TAG,String.format(
+                    "Error setting Readable Permission for file %s",f.getAbsolutePath()));
+        }
+        if(!f.setWritable(true)){
+            Log.e(NabstaApplication.LOG_TAG,String.format(
+                    "Error setting Writable Permission for file %s",f.getAbsolutePath()));
+        }
+        */
         if(!f.exists()) {
-            Log.d(NabstaApplication.LOG_TAG, String.format("Creating new playback file: %s",f.getName()));
+            Log.d(NabstaApplication.LOG_TAG, String.format(
+                    "Creating new playback file: %s",f.getName()));
             try {
-                f.createNewFile();
+                if(!f.createNewFile()){
+                    Log.e(NabstaApplication.LOG_TAG,String.format(
+                            "Error Creating file %s",f.getAbsolutePath()));
+                }
             } catch (IOException e) {
-                Log.e(NabstaApplication.LOG_TAG, String.format("Error Creating File: %s Error Message: %s",f,e.getMessage()),e);
+                Log.e(NabstaApplication.LOG_TAG, String.format(
+                        "Error Creating File: %s Error Message: %s",f,e.getMessage()),e);
             }
         }else{
-            Log.d(NabstaApplication.LOG_TAG, String.format("Playback file exists: %s", f.getName()));
+            Log.d(NabstaApplication.LOG_TAG, String.format(
+                    "Playback file exists: %s", f.getName()));
         }
         if(trackVisualizerView != null && recordButton != null) {
-            mediaStateHandler = new MediaStateHandler(getContext(), this, playBackFileName, trackVisualizerView, recordButton);
+            mediaStateHandler = new MediaStateHandler(getContext(),
+                    this, playBackFileName, trackVisualizerView, recordButton);
         }else{
             mediaStateHandler = new MediaStateHandler(getContext(), this, playBackFileName);
         }

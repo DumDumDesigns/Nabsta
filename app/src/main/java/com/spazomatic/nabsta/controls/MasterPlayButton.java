@@ -20,6 +20,7 @@ public class MasterPlayButton extends Button {
 
     OnClickListener clicker = new OnClickListener() {
         public void onClick(View v) {
+
             Log.d(NabstaApplication.LOG_TAG, "About to add All PlaybackManagers............");
             for(AudioPlaybackManager apm: apmAllTracks) {
                 if (apm.isReady()) {
@@ -30,6 +31,7 @@ public class MasterPlayButton extends Button {
                     apm.callStopPlaying();
                 }
             }
+
         }
     };
 
@@ -42,7 +44,7 @@ public class MasterPlayButton extends Button {
 
         apmAllTracks = new AudioPlaybackManager[NabstaApplication.ALL_TRACKS.length];
         for(int i = 0; i < NabstaApplication.ALL_TRACKS.length; i++ ){
-            Log.d(NabstaApplication.LOG_TAG, String.format("CREATING MEDIASTATE HANDLER AND PLAYYBACKMANAGER FOR: %s", NabstaApplication.ALL_TRACKS));
+            Log.d(NabstaApplication.LOG_TAG, String.format("CREATING MEDIASTATE HANDLER AND PLAYYBACKMANAGER FOR: %s", NabstaApplication.ALL_TRACKS[i]));
             MediaStateHandler mediaStateHandler = new MediaStateHandler(getContext(), this, NabstaApplication.ALL_TRACKS[i], trackVisualizerViews[i], true);
             Log.d(NabstaApplication.LOG_TAG,"MEDIASTATEHANDLER CREATED");
             AudioPlaybackManager apm = new AudioPlaybackManager(mediaStateHandler);
@@ -51,5 +53,6 @@ public class MasterPlayButton extends Button {
         }
 
     }
+
 }
 
