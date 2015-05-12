@@ -3,7 +3,10 @@ package com.spazomatic.nabsta;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.media.audiofx.Visualizer;
 import android.util.Log;
+
+import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -23,11 +26,16 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
     private static final int FREQUENCY = 44100;
     private static final int MIN_BUFF_SIZE = AudioRecord.getMinBufferSize(
             FREQUENCY, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-
+    private Visualizer trackVisualizer = null;
+    private final TrackVisualizerView trackVisualizerView;
     public AudioRecordManager(String recordFileName) {
         this.recordFileName = recordFileName;
+        this.trackVisualizerView = null;
     }
-
+    public AudioRecordManager(String recordFileName, TrackVisualizerView trackVisualizerView) {
+        this.recordFileName = recordFileName;
+        this.trackVisualizerView = trackVisualizerView;
+    }
     @Override
     public void run() {
         Log.d(NabstaApplication.LOG_TAG, "AudioRecordManager Running: " + recordFileName);
@@ -72,9 +80,10 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
                 AudioFormat.ENCODING_PCM_16BIT,
                 MIN_BUFF_SIZE);
         try {
+
             byte[] buffer = new byte[MIN_BUFF_SIZE];
             audioRecord.startRecording();
-
+            setUpVisualizer(audioRecord.getAudioSessionId());
             while (isRecording) {
                 int bufferReadResult = audioRecord.read(buffer, 0, MIN_BUFF_SIZE);
                 for (int i = 0; i < bufferReadResult; i++)
@@ -117,6 +126,40 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
             Log.e(NabstaApplication.LOG_TAG, String.format("Recording failed: %s",e.getCause()),e);
         }finally {
             stopRecording();
+        }
+    }
+
+    private void setUpVisualizer(int audioSessionID){
+        final TrackVisualizerView trackVisualizerView = this.trackVisualizerView;
+        if(trackVisualizerView != null) {
+            trackVisualizerView.clearCanvas();
+            //trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
+            trackVisualizer = new Visualizer(audioSessionID);
+            trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+
+            //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
+            int resultOfSetDataCapture = trackVisualizer.setDataCaptureListener(
+                    new Visualizer.OnDataCaptureListener() {
+                        @Override
+                        public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform,
+                                                          int samplingRate) {
+                            //TODO: AddMaster trackView
+                            trackVisualizerView.updateVisualizer(waveform);
+                        }
+
+                        @Override
+                        public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                            trackVisualizerView.updateVisualizer(fft);
+                        }
+                    }, Visualizer.getMaxCaptureRate(), true, false);
+            if(Visualizer.SUCCESS == resultOfSetDataCapture) {
+                trackVisualizer.setEnabled(true);
+            }else{
+                //TODO: Handle error for end user.
+                Log.e(NabstaApplication.LOG_TAG,String.format(
+                        "Error setting dataCapture Listener: %d",
+                        resultOfSetDataCapture));
+            }
         }
     }
     public boolean isRecording() {

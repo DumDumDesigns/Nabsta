@@ -11,6 +11,7 @@ import com.spazomatic.nabsta.AudioRecordManager;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
+import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +21,9 @@ import java.io.IOException;
  */
 public class RecordButton extends Button {
     private String recordFileName;
+    private String fileName;
     private MediaStateHandler mediaStateHandler;
+
     AudioRecordManager arm = null;
 
 
@@ -41,23 +44,28 @@ public class RecordButton extends Button {
 
         TypedArray a = context.obtainStyledAttributes(attrs,R.styleable.RecordButton);
         try {
-            String fileName = a.getString(R.styleable.RecordButton_recordFileName);
-            recordTrack(fileName);
+            fileName = a.getString(R.styleable.RecordButton_recordFileName);
+            //recordTrack(fileName);
+            recordFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
         }finally {
             a.recycle();
         }
         setOnClickListener(clicker);
     }
 
-    private void recordTrack(String fileName) {
+    public void prepareTrack(TrackVisualizerView trackVisualizerView) {
 
-        recordFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
+        //recordFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
         Log.d(NabstaApplication.LOG_TAG, String.format("Got recordFileName attr: %s",recordFileName));
-        checkCreateFile(fileName);
-        arm = new AudioRecordManager(recordFileName);
+        checkCreateFile();
+        if(trackVisualizerView != null){
+            arm = new AudioRecordManager(recordFileName,trackVisualizerView);
+        }else {
+            arm = new AudioRecordManager(recordFileName);
+        }
     }
 
-    private void checkCreateFile(String fileName) {
+    private void checkCreateFile() {
         File f = new File(NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(), fileName);
         f.setExecutable(true);
         f.setReadable(true);
@@ -84,4 +92,6 @@ public class RecordButton extends Button {
     public void setMediaStateHandler(MediaStateHandler mediaStateHandler) {
         this.mediaStateHandler = mediaStateHandler;
     }
+
+
 }

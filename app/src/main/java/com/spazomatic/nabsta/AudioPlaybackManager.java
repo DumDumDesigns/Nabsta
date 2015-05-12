@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.audiofx.Visualizer;
+import android.os.Message;
 import android.util.Log;
 
 import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
@@ -18,15 +19,17 @@ import java.io.IOException;
 /**
  * Created by samuelsegal on 4/16/15.
  */
-public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
-
-
+public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListener,
+        MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+    public static final int TRACK_COMPLETE_STATE = 3;
     private MediaPlayer trackPlayer = null;
     private final String playBackFileName;
     private MediaStateHandler mediaStateHandler = null;
     private Visualizer trackVisualizer = null;
-    private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+    private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(
+            44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private static final int FREQUENCY = 44100;
+    private AudioTrack audioTrack;
     //private static final float VISUALIZER_HEIGHT_DIP = 50f;
     public AudioPlaybackManager(MediaStateHandler mediaStateHandler) {
         this.mediaStateHandler = mediaStateHandler;
@@ -43,12 +46,11 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
                 mediaStateHandler.begin();
                 return true;
             } else{
-                mediaStateHandler.complete();
                 return false;
             }
     }
     public void callStopPlaying(){
-        mediaStateHandler.complete();
+
         stopPlaying();
     }
 
@@ -64,17 +66,23 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             trackVisualizer.release();
             trackVisualizer = null;
         }
+        if(audioTrack != null) {
+            //audioTrack.stop();
+            audioTrack.release();
+        }
+
     }
 
     @Override
     public void run() {
-        Log.d(NabstaApplication.LOG_TAG, String.format("AudioPlaybackManager running: %s", playBackFileName));
+        Log.d(NabstaApplication.LOG_TAG, String.format(
+                "AudioPlaybackManager running: %s", playBackFileName));
         startPlaying();
     }
 
     private void playWithAudioTrack(){
 
-        AudioTrack audioTrack = new AudioTrack(
+        audioTrack = new AudioTrack(
                 AudioManager.STREAM_MUSIC,
                 FREQUENCY,
                 AudioFormat.CHANNEL_OUT_MONO,
@@ -84,35 +92,30 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
         byte[] track = convertStreamToByteArray(playBackFileName);
 
-        byte[] output = new byte[track.length];
         setUpVisualizer(audioTrack.getAudioSessionId());
         audioTrack.play();
-
-        for(int i=0; i < output.length; i++){
-
-            float sampleFloat =  track[i] / 128.0f;
-            if (sampleFloat > 1.0f) sampleFloat = 1.0f;
-            if (sampleFloat < -1.0f) sampleFloat = -1.0f;
-            byte outputSample = (byte)(sampleFloat * 128.0f);
-            output[i] = outputSample;
-
-        }
-        int numberOfBytesWritten = audioTrack.write(output, 0, output.length);
+        int numberOfBytesWritten = audioTrack.write(track, 0, track.length);
         if(numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
                 numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
-                numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT){
+                numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT) {
             Log.e(NabstaApplication.LOG_TAG,"Error Writing bytes to Mix Track");
         }
-        Log.d(NabstaApplication.LOG_TAG,String.format(
-                "Wrote %d bytes to Track %s.",numberOfBytesWritten,playBackFileName
+        Log.d(NabstaApplication.LOG_TAG, String.format(
+                "Wrote %d bytes to Track %s.", numberOfBytesWritten, playBackFileName
         ));
 
         if(audioTrack != null) {
+            //audioTrack.stop();
             audioTrack.release();
+            Message trackCompleteMessage = mediaStateHandler.getUiHandler().obtainMessage(TRACK_COMPLETE_STATE,mediaStateHandler);
+            trackCompleteMessage.sendToTarget();
+        }
+        if(trackVisualizer != null){
             trackVisualizer.setEnabled(false);
             trackVisualizer.release();
             trackVisualizer = null;
         }
+
     }
     private void playWithMediaPlayer(){
         try {
@@ -134,7 +137,13 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
     private void mixSound() {
 
-        AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, FREQUENCY, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, MIN_BUFF_SIZE, AudioTrack.MODE_STREAM);
+        AudioTrack audioTrack = new AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                FREQUENCY,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                MIN_BUFF_SIZE,
+                AudioTrack.MODE_STREAM);
 
         byte[] track1 = convertStreamToByteArray(NabstaApplication.ALL_TRACKS[0]);
 
@@ -223,9 +232,11 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
 
             //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
-            int resultOfSetDataCapture = trackVisualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+            int resultOfSetDataCapture = trackVisualizer.setDataCaptureListener(
+                    new Visualizer.OnDataCaptureListener() {
                 @Override
-                public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform,
+                                                  int samplingRate) {
                     //TODO: AddMaster trackView
                     trackVisualizerView.updateVisualizer(waveform);
                 }
@@ -245,9 +256,12 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             }
         }
     }
+
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        Log.e(NabstaApplication.LOG_TAG, String.format("MediaPlayer.OnErrorListener  what: %s: extra: %s", getErrorWhatCode(what), getErrorExtraCode(extra)));
+        Log.e(NabstaApplication.LOG_TAG, String.format(
+                "MediaPlayer.OnErrorListener  what: %s: extra: %s",
+                getErrorWhatCode(what), getErrorExtraCode(extra)));
         stopPlaying();
         return true;
     }

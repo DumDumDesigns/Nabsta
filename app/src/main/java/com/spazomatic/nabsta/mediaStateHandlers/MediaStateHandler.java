@@ -1,17 +1,25 @@
 package com.spazomatic.nabsta.mediaStateHandlers;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Button;
 
+import com.spazomatic.nabsta.AudioPlaybackManager;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.controls.RecordButton;
 import com.spazomatic.nabsta.views.TrackVisualizerView;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by samuelsegal on 4/23/15.
  */
 public class MediaStateHandler {
+
+    private  UIHandler uiHandler;
     private RecordButton recordButton;
     private Button button;
     private Context context;
@@ -22,10 +30,12 @@ public class MediaStateHandler {
     private boolean isOfMasterTrack;
     private static int trackCountForMaster;
     private TrackVisualizerView trackVisualizerView;
+
     public MediaStateHandler(Context context, Button button, String fileName) {
         this.fileName = fileName;
         this.context = context;
         this.button = button;
+        this.uiHandler = new UIHandler(Looper.getMainLooper(),this);
     }
     public MediaStateHandler(Context context, Button button, String fileName, TrackVisualizerView trackVisualizerView){
         this(context, button, fileName);
@@ -106,7 +116,9 @@ public class MediaStateHandler {
                     button.setSelected(false);
                 }
             } else {
-                button.setSelected(false);
+                if(button.isSelected()) {
+                    button.setSelected(false);
+                }
             }
         }catch(Exception e){
             Log.e(NabstaApplication.LOG_TAG,String.format("Error settingSelect %s",e.getMessage()),e);
@@ -115,7 +127,7 @@ public class MediaStateHandler {
 
     public void begin() {
         Log.d(NabstaApplication.LOG_TAG,"BEGINNNNNNNNNN");
-        Log.d(NabstaApplication.LOG_TAG,String.format("Button: %s",button.toString()));
+
         if(isOfMasterTrack){
             increaseTrackCountForMaster();
         }
@@ -125,5 +137,35 @@ public class MediaStateHandler {
             Log.e(NabstaApplication.LOG_TAG,String.format("Error settingSelect %s",e.getMessage()),e);
         }
 
+    }
+
+    public Handler getUiHandler() {
+        return uiHandler;
+    }
+
+
+    private static class UIHandler extends Handler{
+        private WeakReference<MediaStateHandler> mediaStateHandlerWeakReference;
+
+        public UIHandler(Looper looper, MediaStateHandler mediaStateHandler) {
+            super(looper);
+            this.mediaStateHandlerWeakReference = new WeakReference<>(mediaStateHandler);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            Log.d(NabstaApplication.LOG_TAG,String.format("Handling message %d",msg.what));
+            MediaStateHandler mediaStateHandler = mediaStateHandlerWeakReference.get();
+            switch(msg.what){
+                case AudioPlaybackManager.TRACK_COMPLETE_STATE:{
+                    mediaStateHandler.complete();
+                }
+                default:{
+                    super.handleMessage(msg);
+                }
+            }
+
+
+        }
     }
 }
