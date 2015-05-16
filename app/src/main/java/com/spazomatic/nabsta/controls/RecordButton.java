@@ -11,7 +11,6 @@ import com.spazomatic.nabsta.AudioRecordManager;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
-import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,16 +52,13 @@ public class RecordButton extends Button {
         setOnClickListener(clicker);
     }
 
-    public void prepareTrack(TrackVisualizerView trackVisualizerView) {
+    public void prepareTrack() {
 
-        //recordFileName = NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath() + "/" + fileName;
-        Log.d(NabstaApplication.LOG_TAG, String.format("Got recordFileName attr: %s",recordFileName));
+        Log.d(NabstaApplication.LOG_TAG, String.format(
+                "Got recordFileName attr: %s",recordFileName));
         checkCreateFile();
-        if(trackVisualizerView != null){
-            arm = new AudioRecordManager(recordFileName,trackVisualizerView);
-        }else {
-            arm = new AudioRecordManager(recordFileName);
-        }
+        arm = new AudioRecordManager(recordFileName);
+
     }
 
     private void checkCreateFile() {
@@ -72,13 +68,14 @@ public class RecordButton extends Button {
         f.setWritable(true);
 
         if(!f.exists()) {
-            Log.d(NabstaApplication.LOG_TAG,String.format("Creating new record file: %s",f.getName()));
+            Log.d(NabstaApplication.LOG_TAG,String.format(
+                    "Creating new record file: %s",f.getName()));
             try {
                 f.createNewFile();
             } catch (IOException e) {
                 Log.e(NabstaApplication.LOG_TAG,String.format(
                         "Error creating file %s with error message %s",
-                        f.getAbsolutePath().toString(),e.getMessage()), e);
+                        f.getAbsolutePath(),e.getMessage()), e);
             }
         }else{
             Log.d(NabstaApplication.LOG_TAG,String.format("Record file exists: %s", f.getName()));

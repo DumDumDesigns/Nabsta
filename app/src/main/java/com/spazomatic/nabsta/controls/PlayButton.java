@@ -33,7 +33,7 @@ public class PlayButton extends Button {
                 if (mediaStateHandler.isInRecordMode()) {
                     if (arm == null) {
                         apm = null;
-                        arm = new AudioRecordManager(mediaStateHandler.getFileName());
+                        arm = new AudioRecordManager(mediaStateHandler.getFileName(), mediaStateHandler);
                     }
                     if (!arm.isRecording()) {
                         arm.setIsRecording(true);

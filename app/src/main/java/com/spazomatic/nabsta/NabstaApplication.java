@@ -1,8 +1,11 @@
 package com.spazomatic.nabsta;
 
 import android.app.Application;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
+
+import com.spazomatic.nabsta.db.DatabaseOpenHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +17,7 @@ public class NabstaApplication extends Application{
     public static final String LOG_TAG = "Nabsta";
     public static File NABSTA_ROOT_DIR;
     public static String [] ALL_TRACKS;
+    //private DAOSession daoSession;
     private static NabstaApplication nabstaApplicationInstance;
     public static NabstaApplication getInstance(){
         return nabstaApplicationInstance;
@@ -63,6 +67,17 @@ public class NabstaApplication extends Application{
             Log.d(LOG_TAG, "Adding track " + playBackFileName + " to ALL_TRACKS.");
             ALL_TRACKS[i++] = playBackFileName;
         }
+        
+        //setupDataBase();
 
+    }
+
+    private void setupDataBase() {
+        DatabaseOpenHelper helper = DatabaseOpenHelper.getInstance(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        //DaoMaster daoMaster = new DaoMaster(db);
+       // daoSession = daoMaster.newSession();
+       // List<LiquorType> liquorTypes = daoSession.getLiquorTypeDao().loadAll();
+       // Log.d(LOG_TAG,"Number of liquorTypes:" + liquorTypes.size());
     }
 }

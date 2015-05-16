@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Button;
 
 import com.spazomatic.nabsta.AudioPlaybackManager;
+import com.spazomatic.nabsta.AudioRecordManager;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.controls.RecordButton;
 import com.spazomatic.nabsta.views.TrackVisualizerView;
@@ -154,18 +155,28 @@ public class MediaStateHandler {
 
         @Override
         public void handleMessage(Message msg) {
-            Log.d(NabstaApplication.LOG_TAG,String.format("Handling message %d",msg.what));
+
             MediaStateHandler mediaStateHandler = mediaStateHandlerWeakReference.get();
             switch(msg.what){
                 case AudioPlaybackManager.TRACK_COMPLETE_STATE:{
                     mediaStateHandler.complete();
+                    break;
+                }
+                case AudioRecordManager.DISPLAY_RECORD_BYTES:{
+                    mediaStateHandler.updateVisualizer((byte[])msg.obj);
+                    break;
                 }
                 default:{
                     super.handleMessage(msg);
+                    break;
                 }
             }
 
 
         }
+    }
+
+    private void updateVisualizer(byte[] buffer) {
+        trackVisualizerView.updateVisualizer(buffer);
     }
 }

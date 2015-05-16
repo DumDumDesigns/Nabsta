@@ -1,11 +1,15 @@
 package com.spazomatic.nabsta;
 
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.media.audiofx.Visualizer;
+import android.os.Message;
 import android.util.Log;
 
+import com.spazomatic.nabsta.mediaStateHandlers.MediaStateHandler;
 import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 import java.io.BufferedOutputStream;
@@ -27,15 +31,18 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
     private static final int MIN_BUFF_SIZE = AudioRecord.getMinBufferSize(
             FREQUENCY, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private Visualizer trackVisualizer = null;
-    private final TrackVisualizerView trackVisualizerView;
+
+    public  static final int DISPLAY_RECORD_BYTES = 2;
+    private MediaStateHandler mediaStateHandler;
+
     public AudioRecordManager(String recordFileName) {
         this.recordFileName = recordFileName;
-        this.trackVisualizerView = null;
     }
-    public AudioRecordManager(String recordFileName, TrackVisualizerView trackVisualizerView) {
+    public AudioRecordManager(String recordFileName, MediaStateHandler mediaStateHandler) {
         this.recordFileName = recordFileName;
-        this.trackVisualizerView = trackVisualizerView;
+        this.mediaStateHandler = mediaStateHandler;
     }
+
     @Override
     public void run() {
         Log.d(NabstaApplication.LOG_TAG, "AudioRecordManager Running: " + recordFileName);
@@ -47,7 +54,6 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
                     "Error in run of AudioRecordManager: %s", e.getMessage()), e);
         }
     }
-
     private void recordWithAudioRecorder() throws IOException{
         File file = new File(recordFileName);
 
@@ -73,23 +79,37 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
         Log.d(NabstaApplication.LOG_TAG,String.format(
                 "Begin Recording File: %s",
                 file.getAbsolutePath()));
+
         AudioRecord audioRecord = new AudioRecord(
                 MediaRecorder.AudioSource.MIC,
                 FREQUENCY,
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 MIN_BUFF_SIZE);
-        try {
+        AudioTrack audioTrack = new AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                FREQUENCY,
+                AudioFormat.CHANNEL_OUT_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                MIN_BUFF_SIZE,
+                AudioTrack.MODE_STREAM,
+                audioRecord.getAudioSessionId());
 
+        try {
             byte[] buffer = new byte[MIN_BUFF_SIZE];
             audioRecord.startRecording();
-            setUpVisualizer(audioRecord.getAudioSessionId());
+            audioTrack.play();
+            setUpVisualizer(audioTrack.getAudioSessionId());
             while (isRecording) {
                 int bufferReadResult = audioRecord.read(buffer, 0, MIN_BUFF_SIZE);
-                for (int i = 0; i < bufferReadResult; i++)
+                for (int i = 0; i < bufferReadResult; i++) {
                     dos.writeByte(buffer[i]);
+                }
+                //TODO: Learn DSP to create own record visualizer in order to remove this hack of playing back recorded buffer for visualizer capability
+                playWithAudioTrack(buffer, audioTrack);
             }
-            Log.d(NabstaApplication.LOG_TAG,String.format(
+
+            Log.d(NabstaApplication.LOG_TAG, String.format(
                     "Finish Recording File %s", file.getAbsolutePath()));
         } catch (IOException e) {
             Log.e(NabstaApplication.LOG_TAG, String.format(
@@ -98,8 +118,64 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
             audioRecord.stop();
             audioRecord.release();
             dos.close();
+            if (audioTrack != null) {
+                audioTrack.stop();
+                audioTrack.release();
+                Message trackCompleteMessage = mediaStateHandler.getUiHandler().obtainMessage(
+                        AudioPlaybackManager.TRACK_COMPLETE_STATE, mediaStateHandler);
+                trackCompleteMessage.sendToTarget();
+            }
+
+            if (trackVisualizer != null) {
+                trackVisualizer.setEnabled(false);
+                trackVisualizer.release();
+                trackVisualizer = null;
+            }
         }
     }
+    private void playWithAudioTrack(byte[] buffer, AudioTrack audioTrack){
+
+        int numberOfBytesWritten = audioTrack.write(buffer, 0, MIN_BUFF_SIZE);
+        if (numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
+                numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
+                numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT) {
+            Log.e(NabstaApplication.LOG_TAG, "Error Writing bytes to Mix Track");
+        }
+
+    }
+    private void setUpVisualizer(int audioSessionID){
+
+        final TrackVisualizerView trackVisualizerView = mediaStateHandler.getTrackVisualizerView();
+        if(trackVisualizerView != null) {
+            trackVisualizerView.reset();
+            //trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
+            trackVisualizer = new Visualizer(audioSessionID);
+            trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
+            //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
+            int resultOfSetDataCapture = trackVisualizer.setDataCaptureListener(
+                    new Visualizer.OnDataCaptureListener() {
+                        @Override
+                        public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform,
+                                                          int samplingRate) {
+                            trackVisualizerView.updateVisualizer(waveform);
+                        }
+
+                        @Override
+                        public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+                            trackVisualizerView.updateVisualizer(fft);
+                        }
+                    }, Visualizer.getMaxCaptureRate(), true, false);
+            if(Visualizer.SUCCESS == resultOfSetDataCapture) {
+                trackVisualizer.setEnabled(true);
+            }else{
+                //TODO: Handle error for end user.
+                Log.e(NabstaApplication.LOG_TAG,String.format(
+                        "Error setting dataCapture Listener: %d",
+                        resultOfSetDataCapture));
+            }
+        }
+    }
+
 
     private void recordWithMediaRecorder(){
         mRecorder = null;
@@ -129,39 +205,6 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
         }
     }
 
-    private void setUpVisualizer(int audioSessionID){
-        final TrackVisualizerView trackVisualizerView = this.trackVisualizerView;
-        if(trackVisualizerView != null) {
-            trackVisualizerView.clearCanvas();
-            //trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
-            trackVisualizer = new Visualizer(audioSessionID);
-            trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
-
-            //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
-            int resultOfSetDataCapture = trackVisualizer.setDataCaptureListener(
-                    new Visualizer.OnDataCaptureListener() {
-                        @Override
-                        public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform,
-                                                          int samplingRate) {
-                            //TODO: AddMaster trackView
-                            trackVisualizerView.updateVisualizer(waveform);
-                        }
-
-                        @Override
-                        public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-                            trackVisualizerView.updateVisualizer(fft);
-                        }
-                    }, Visualizer.getMaxCaptureRate(), true, false);
-            if(Visualizer.SUCCESS == resultOfSetDataCapture) {
-                trackVisualizer.setEnabled(true);
-            }else{
-                //TODO: Handle error for end user.
-                Log.e(NabstaApplication.LOG_TAG,String.format(
-                        "Error setting dataCapture Listener: %d",
-                        resultOfSetDataCapture));
-            }
-        }
-    }
     public boolean isRecording() {
         return isRecording;
     }
@@ -190,4 +233,5 @@ public class AudioRecordManager implements Runnable, MediaRecorder.OnErrorListen
         Log.e(NabstaApplication.LOG_TAG, String.format(
                 "MediaPlayer.OnInfoListener  what: %d: extra: %d", what, extra));
     }
+
 }

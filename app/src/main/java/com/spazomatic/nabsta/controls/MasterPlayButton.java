@@ -19,6 +19,7 @@ public class MasterPlayButton extends Button {
     AudioPlaybackManager [] apmAllTracks = null;
 
     OnClickListener clicker = new OnClickListener() {
+
         public void onClick(View v) {
 
             Log.d(NabstaApplication.LOG_TAG, "About to add All PlaybackManagers............");

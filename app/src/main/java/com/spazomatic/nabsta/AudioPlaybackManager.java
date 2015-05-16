@@ -30,7 +30,7 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private static final int FREQUENCY = 44100;
     private AudioTrack audioTrack;
-    //private static final float VISUALIZER_HEIGHT_DIP = 50f;
+
     public AudioPlaybackManager(MediaStateHandler mediaStateHandler) {
         this.mediaStateHandler = mediaStateHandler;
         this.playBackFileName = mediaStateHandler.getFileName();
@@ -226,18 +226,17 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
     private void setUpVisualizer(int audioSessionID){
         final TrackVisualizerView trackVisualizerView = mediaStateHandler.getTrackVisualizerView();
         if(trackVisualizerView != null) {
-            trackVisualizerView.clearCanvas();
+            trackVisualizerView.reset();
             //trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
             trackVisualizer = new Visualizer(audioSessionID);
             trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
-
+            Log.d(NabstaApplication.LOG_TAG, String.format("CaptureSize: %d", trackVisualizer.getCaptureSize()));
             //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
             int resultOfSetDataCapture = trackVisualizer.setDataCaptureListener(
                     new Visualizer.OnDataCaptureListener() {
                 @Override
                 public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform,
                                                   int samplingRate) {
-                    //TODO: AddMaster trackView
                     trackVisualizerView.updateVisualizer(waveform);
                 }
 
