@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
 
-import com.spazomatic.nabsta.db.DatabaseOpenHelper;
+import com.spazomatic.nabsta.db.DataBaseOpenHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class NabstaApplication extends Application{
     }
 
     private void setupDataBase() {
-        DatabaseOpenHelper helper = DatabaseOpenHelper.getInstance(this);
+        DataBaseOpenHelper helper = DataBaseOpenHelper.getInstance(this);
         SQLiteDatabase db = helper.getWritableDatabase();
         //DaoMaster daoMaster = new DaoMaster(db);
        // daoSession = daoMaster.newSession();
