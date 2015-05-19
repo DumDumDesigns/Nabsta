@@ -2,9 +2,20 @@
     xmlns:nabsta="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
     <item
-        android:id="@+id/action_example"
-        android:title="@string/action_example"
-        nabsta:showAsAction="ifRoom|withText" />
+        android:id="@+id/action_project"
+        android:icon="@drawable/drop_down_arrow_white_24"
+        android:title="@string/project"
+        android:orderInCategory="1"
+        nabsta:showAsAction="ifRoom|withText"
+        nabsta:actionProviderClass="com.spazomatic.nabsta.NabstaActionProvider"/>
+    <item
+        android:id="@+id/action_songs"
+        android:icon="@drawable/drop_down_arrow_white_24"
+        android:title="@string/songs"
+        android:orderInCategory="2"
+        nabsta:showAsAction="ifRoom|withText"
+        nabsta:actionProviderClass="com.spazomatic.nabsta.NabstaActionProvider"/>
+
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"

@@ -92,7 +92,12 @@ public class NabstaApplication extends Application{
         DaoMaster daoMaster = new DaoMaster(db);
         daoSession = daoMaster.newSession();
         List<Song> songs = daoSession.getSongDao().loadAll();
+
         Log.d(LOG_TAG,String.format("Number of Songs: %d",songs.size()));
+    }
+
+    public DaoSession getDaoSession() {
+        return daoSession;
     }
 
     public static boolean isActivityVisible() {

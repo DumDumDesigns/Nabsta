@@ -4,6 +4,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.media.MediaPlayer;
+import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
 import android.os.Message;
 import android.util.Log;
@@ -19,25 +20,35 @@ import java.io.IOException;
 /**
  * Created by samuelsegal on 4/16/15.
  */
-public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListener,
-        MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+public class AudioPlaybackManager implements Runnable {
     public static final int TRACK_COMPLETE_STATE = 3;
-    private MediaPlayer trackPlayer = null;
+
     private final String playBackFileName;
     private MediaStateHandler mediaStateHandler = null;
     private Visualizer trackVisualizer = null;
+    private Equalizer equalizer;
     private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(
             44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private static final int FREQUENCY = 44100;
     private AudioTrack audioTrack;
+    private volatile boolean isMuted;
+
+    public boolean isMuted() {
+        return isMuted;
+    }
+
+    public void setIsMuted(boolean isMuted) {
+        this.isMuted = isMuted;
+
+    }
 
     public AudioPlaybackManager(MediaStateHandler mediaStateHandler) {
         this.mediaStateHandler = mediaStateHandler;
         this.playBackFileName = mediaStateHandler.getFileName();
-
     }
+
+
     private void startPlaying() {
-        //playWithMediaPlayer();
         playWithAudioTrack();
     }
     public boolean isReady(){
@@ -56,11 +67,7 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
     private void stopPlaying() {
         Log.d(NabstaApplication.LOG_TAG, "stopPlayingCalled() called.");
-        if(trackPlayer != null) {
-            trackPlayer.stop();
-            trackPlayer.release();
-            trackPlayer = null;
-        }
+
         if(trackVisualizer != null){
             trackVisualizer.setEnabled(false);
             trackVisualizer.release();
@@ -107,7 +114,8 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
         if(audioTrack != null) {
             //audioTrack.stop();
             audioTrack.release();
-            Message trackCompleteMessage = mediaStateHandler.getUiHandler().obtainMessage(TRACK_COMPLETE_STATE,mediaStateHandler);
+            Message trackCompleteMessage = mediaStateHandler.getUiHandler().obtainMessage(
+                    TRACK_COMPLETE_STATE,mediaStateHandler);
             trackCompleteMessage.sendToTarget();
         }
         if(trackVisualizer != null){
@@ -116,23 +124,6 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
             trackVisualizer = null;
         }
 
-    }
-    private void playWithMediaPlayer(){
-        try {
-
-            trackPlayer = null;
-            trackPlayer = new MediaPlayer();
-            trackPlayer.setOnErrorListener(this);
-            trackPlayer.setOnPreparedListener(this);
-            trackPlayer.setOnCompletionListener(this);
-            trackPlayer.setDataSource(playBackFileName);
-            trackPlayer.prepare();
-
-        } catch (IOException | IllegalStateException | IllegalArgumentException e) {
-            Log.e(NabstaApplication.LOG_TAG, String.format(
-                    "Playback Failed: %s: Error Message: %s ",
-                    playBackFileName, e.getMessage()), e);
-        }
     }
 
     private void mixSound() {
@@ -173,7 +164,7 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
         if(numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
                 numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
                 numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT){
-            Log.e(NabstaApplication.LOG_TAG,"Error Writing bytes to Mix Track");
+            Log.e(NabstaApplication.LOG_TAG, "Error Writing bytes to Mix Track");
 
         }
         if(audioTrack != null) {
@@ -222,7 +213,6 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
 
         return soundBytes;
     }
-
     private void setUpVisualizer(int audioSessionID){
         final TrackVisualizerView trackVisualizerView = mediaStateHandler.getTrackVisualizerView();
         if(trackVisualizerView != null) {
@@ -254,30 +244,6 @@ public class AudioPlaybackManager implements Runnable, MediaPlayer.OnErrorListen
                         resultOfSetDataCapture));
             }
         }
-    }
-
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        Log.e(NabstaApplication.LOG_TAG, String.format(
-                "MediaPlayer.OnErrorListener  what: %s: extra: %s",
-                getErrorWhatCode(what), getErrorExtraCode(extra)));
-        stopPlaying();
-        return true;
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        setUpVisualizer(trackPlayer.getAudioSessionId());
-        mp.setLooping(mediaStateHandler.isLooping());
-        mp.start();
-        mediaStateHandler.begin();
-        Log.d(NabstaApplication.LOG_TAG, String.format("Playing file: %s", playBackFileName));
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        stopPlaying();
-        mediaStateHandler.complete();
     }
 
     private String getErrorWhatCode(int what){

@@ -1,15 +1,16 @@
 package com.spazomatic.nabsta;
-import android.net.Uri;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
-
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,19 +19,20 @@ import com.spazomatic.nabsta.fragments.NavigationDrawerFragment;
 import com.spazomatic.nabsta.fragments.Studio;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
 
-
 public class MainActivity extends ActionBarActivity implements
-        NavigationDrawerFragment.NavigationDrawerCallbacks, Studio.OnFragmentInteractionListener{
+        NavigationDrawerFragment.NavigationDrawerCallbacks, Studio.OnFragmentInteractionListener
+{
 
     private NavigationDrawerFragment navigationDrawerFragment;
     private CharSequence title;
     private BatteryLevelReceiver batteryLevelReceiver;
     private IntentFilter batteryChanged;
+    private NabstaActionProvider shareActionProvider;
 
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        //audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        //AudioManager audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         //Hardware buttons setting to adjust the media
 
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -46,6 +48,7 @@ public class MainActivity extends ActionBarActivity implements
                 (DrawerLayout) findViewById(R.id.drawer_layout));
         batteryLevelReceiver = new BatteryLevelReceiver();
         batteryChanged = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+
     }
 
     @Override
@@ -78,12 +81,12 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     public void restoreActionBar() {
+
         ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(title);
-        actionBar.setDisplayUseLogoEnabled(true);
-        actionBar.setIcon(R.drawable.ic_launcher);
+
     }
 
     @Override
@@ -93,7 +96,14 @@ public class MainActivity extends ActionBarActivity implements
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.menu_main, menu);
-            restoreActionBar();
+            MenuItem menuItem = menu.findItem(R.id.action_project);
+            shareActionProvider = (NabstaActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            // Set history different from the default before getting the action
+            // view since a call to MenuItemCompat.getActionView() calls
+            // onCreateActionView() which uses the backing file name. Omit this
+            // line if using the default share history file is desired.
+            //shareActionProvider.setShareHistoryFileName("custom_share_history.xml");
+
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -146,4 +156,5 @@ public class MainActivity extends ActionBarActivity implements
     public void onFragmentInteraction(Uri uri) {
         Log.d(NabstaApplication.LOG_TAG,"Fragment Interacting");
     }
+
 }

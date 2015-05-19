@@ -21,4 +21,19 @@
     <string name="track3_3gp">track3.3gp</string>
     <string name="navigation_drawer_close">Close</string>
     <string name="navigation_drawer_open">Open</string>
+
+
+    <string name="project">Nabsta Studio Project</string>
+    <string name="new_project">New Project</string>
+    <string name="delete_project">Delete Project</string>
+    <string name="delete_project_confirmation">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="add_track">Add Track</string>
+    <string name="delete_track">Delete Track</string>
+    <string name="create_project">Create Project</string>
+
+    <string name="project_name">Name</string>
+    <string name="artist_name">Artist</string>
+
+    <string name="songs">Songs</string>
 </resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/pause_50_blue"
+    <item android:drawable="@drawable/loud_speaker_blue_50"
         android:state_selected="true"/>
-    <item android:drawable="@drawable/play_50_green" />
+    <item android:drawable="@drawable/loud_speaker_white_50" />
 </selector>
