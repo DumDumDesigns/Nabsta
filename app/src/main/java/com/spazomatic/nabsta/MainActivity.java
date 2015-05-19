@@ -7,21 +7,25 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.spazomatic.nabsta.actionBar.NabstaActionProvider;
+import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.fragments.NavigationDrawerFragment;
+import com.spazomatic.nabsta.fragments.NewProjectDialog;
+import com.spazomatic.nabsta.fragments.OpenProjectDialog;
 import com.spazomatic.nabsta.fragments.Studio;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
 
 public class MainActivity extends ActionBarActivity implements
-        NavigationDrawerFragment.NavigationDrawerCallbacks, Studio.OnFragmentInteractionListener
+        NavigationDrawerFragment.NavigationDrawerCallbacks,
+        Studio.OnFragmentInteractionListener,
+        NewProjectDialog.OnNewSongListener,
+        OpenProjectDialog.OnOpenSongListener
 {
 
     private NavigationDrawerFragment navigationDrawerFragment;
@@ -49,7 +53,6 @@ public class MainActivity extends ActionBarActivity implements
                 (DrawerLayout) findViewById(R.id.drawer_layout));
         batteryLevelReceiver = new BatteryLevelReceiver();
         batteryChanged = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-
     }
 
     @Override
@@ -78,16 +81,6 @@ public class MainActivity extends ActionBarActivity implements
                 .replace(R.id.container, fragment)
                 .addToBackStack(null)
                 .commit();
-
-    }
-
-    public void restoreActionBar() {
-
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(title);
-
     }
 
     @Override
@@ -97,8 +90,8 @@ public class MainActivity extends ActionBarActivity implements
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.menu_main, menu);
-            MenuItem menuItem = menu.findItem(R.id.action_project);
-            shareActionProvider = (NabstaActionProvider) MenuItemCompat.getActionProvider(menuItem);
+            //MenuItem menuItem = menu.findItem(R.id.action_project);
+            //shareActionProvider = (NabstaActionProvider) MenuItemCompat.getActionProvider(menuItem);
             // Set history different from the default before getting the action
             // view since a call to MenuItemCompat.getActionView() calls
             // onCreateActionView() which uses the backing file name. Omit this
@@ -112,13 +105,6 @@ public class MainActivity extends ActionBarActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
-        }
         return super.onOptionsItemSelected(item);
     }
     @Override
@@ -150,12 +136,34 @@ public class MainActivity extends ActionBarActivity implements
     protected void onDestroy() {
         super.onDestroy();
         Log.d(NabstaApplication.LOG_TAG, "onDestroy called...");
+    }
 
+    @Override
+    public void onNewSong(Song song) {
+        openSong(song);
     }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
-        Log.d(NabstaApplication.LOG_TAG,"Fragment Interacting");
+        Log.d(NabstaApplication.LOG_TAG,"----------Studio is Calling---------------");
     }
 
+    @Override
+    public void onOpenSong(Song song) {
+        openSong(song);
+    }
+    private void openSong(Song song){
+        Log.d(NabstaApplication.LOG_TAG,String.format(
+                "----------Creating New SOng %s---------------",
+                song.getName()));
+        // update the main content by replacing fragments
+        getSupportActionBar().setTitle(song.getName());
+        Fragment fragment = Studio.newInstance(song.getName(),"");
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
 }

@@ -9,10 +9,10 @@ import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
-import android.widget.Toast;
 
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
+import com.spazomatic.nabsta.fragments.ManageProjectsDialog;
 import com.spazomatic.nabsta.fragments.NewProjectDialog;
 
 /**
@@ -21,9 +21,9 @@ import com.spazomatic.nabsta.fragments.NewProjectDialog;
 public class NabstaActionProvider extends ActionProvider
         implements MenuItem.OnMenuItemClickListener{
 
-    Context context;
+    private Context context;
     private MenuItem newProjectMenuItem;
-    private MenuItem deleteProjectMenuItem;
+    private MenuItem manageProjectMenuItem;
     /**
      * Creates a new instance.
      *
@@ -32,7 +32,6 @@ public class NabstaActionProvider extends ActionProvider
     public NabstaActionProvider(Context context) {
         super(context);
         this.context = context;
-
     }
 
     @Override
@@ -51,9 +50,9 @@ public class NabstaActionProvider extends ActionProvider
         newProjectMenuItem.setOnMenuItemClickListener(this);
         newProjectMenuItem.setIcon(R.drawable.ic_launcher);
 
-        deleteProjectMenuItem = subMenu.add(R.string.delete_project);
-        deleteProjectMenuItem.setOnMenuItemClickListener(this);
-        deleteProjectMenuItem.setIcon(R.drawable.delete_button_24_red);
+        manageProjectMenuItem = subMenu.add(R.string.manage_projects);
+        manageProjectMenuItem.setOnMenuItemClickListener(this);
+
     }
 
     @Override
@@ -67,15 +66,20 @@ public class NabstaActionProvider extends ActionProvider
         Log.d(NabstaApplication.LOG_TAG,String.format("Item Title: %s",itemTitle));
         if(itemTitle.equals(newProjectMenuItem.getTitle())) {
             createProject();
-        }else if(itemTitle.equals(deleteProjectMenuItem.getTitle())){
-            Toast.makeText(context, "Delete Project", Toast.LENGTH_LONG).show();
+        }else if(itemTitle.equals(manageProjectMenuItem.getTitle())){
+            manageProjects();
         }
         return true;
     }
 
+    private void manageProjects() {
+        Activity activity = (Activity)((ContextThemeWrapper)context).getBaseContext();
+        ManageProjectsDialog manageProjectsDialog = new ManageProjectsDialog();
+        manageProjectsDialog.show(activity.getFragmentManager(),"NewProjectDialog");
+    }
+
     private void createProject() {
         Activity activity = (Activity)((ContextThemeWrapper)context).getBaseContext();
-
         DialogFragment newProjectDialog = new NewProjectDialog();
         newProjectDialog.show(activity.getFragmentManager(),"NewProjectDialog");
     }

@@ -1,5 +1,6 @@
 package com.spazomatic.nabsta.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -12,9 +13,8 @@ import android.widget.EditText;
 
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
-import com.spazomatic.nabsta.db.Artist;
 import com.spazomatic.nabsta.db.Song;
-import com.spazomatic.nabsta.db.dao.DaoSession;
+import com.spazomatic.nabsta.tasks.CreateSongTask;
 
 /**
  * Created by samuelsegal on 5/18/15.
@@ -23,10 +23,14 @@ public class NewProjectDialog extends DialogFragment{
 
     private String songNameValue;
     private String artistNameValue;
+    private OnNewSongListener resetStudioFragment;
 
+    public interface OnNewSongListener {
+        void onNewSong(Song song);
+    }
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the Builder class for convenient dialog construction
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
@@ -38,31 +42,39 @@ public class NewProjectDialog extends DialogFragment{
                     public void onClick(DialogInterface dialog, int id) {
                         songNameValue = projectName.getText().toString();
                         artistNameValue = artistName.getText().toString();
-                        createSong(songNameValue,artistNameValue);
+                        Song newSong = createSong(songNameValue,artistNameValue);
+                        resetStudioFragment.onNewSong(newSong);
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
+                        //Canceled
                     }
                 });
-        // Create the AlertDialog object and return it
         return builder.create();
     }
 
-    private void createSong(String songNameValue, String artistNameValue) {
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
         try {
-            DaoSession daoSession = NabstaApplication.getInstance().getDaoSession();
-            Artist artist = new Artist();
-            artist.setName(artistNameValue);
-            daoSession.getArtistDao().insert(artist);
+            resetStudioFragment = (OnNewSongListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
 
-            Song song = new Song();
-            song.setName(songNameValue);
-            song.setArtist(artist);
-            daoSession.getSongDao().insert(song);
+    private Song createSong(String songNameValue, String artistNameValue) {
+        try {
+            CreateSongTask createSongTask = new CreateSongTask();
+            String [] params = {songNameValue,artistNameValue};
+            createSongTask.execute(params);
+            Song song = createSongTask.get();
+            return song;
         }catch(Exception e){
             Log.e(NabstaApplication.LOG_TAG,"Error Saving to Database",e);
         }
+        return null;
     }
 }

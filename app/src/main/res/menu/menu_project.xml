@@ -6,7 +6,7 @@
         android:title="@string/new_project"
         android:orderInCategory="1" />
     <item
-        android:id="@+id/action_delete_project"
+        android:id="@+id/action_manage_projects"
         android:icon="@drawable/ic_launcher"
         android:title="@string/delete_project"
         android:orderInCategory="2" />

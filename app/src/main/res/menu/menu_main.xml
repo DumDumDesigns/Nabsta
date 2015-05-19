@@ -14,7 +14,7 @@
         android:title="@string/songs"
         android:orderInCategory="2"
         nabsta:showAsAction="ifRoom|withText"
-        nabsta:actionProviderClass="com.spazomatic.nabsta.actionBar.NabstaActionProvider"/>
+        nabsta:actionProviderClass="com.spazomatic.nabsta.actionBar.SongsActionProvider"/>
 
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
