@@ -1,4 +1,4 @@
-package com.spazomatic.nabsta;
+package com.spazomatic.nabsta.actionBar;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -11,6 +11,8 @@ import android.view.SubMenu;
 import android.view.View;
 import android.widget.Toast;
 
+import com.spazomatic.nabsta.NabstaApplication;
+import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.fragments.NewProjectDialog;
 
 /**

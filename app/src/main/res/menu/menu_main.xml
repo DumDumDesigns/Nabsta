@@ -7,14 +7,14 @@
         android:title="@string/project"
         android:orderInCategory="1"
         nabsta:showAsAction="ifRoom|withText"
-        nabsta:actionProviderClass="com.spazomatic.nabsta.NabstaActionProvider"/>
+        nabsta:actionProviderClass="com.spazomatic.nabsta.actionBar.NabstaActionProvider"/>
     <item
         android:id="@+id/action_songs"
         android:icon="@drawable/drop_down_arrow_white_24"
         android:title="@string/songs"
         android:orderInCategory="2"
         nabsta:showAsAction="ifRoom|withText"
-        nabsta:actionProviderClass="com.spazomatic.nabsta.NabstaActionProvider"/>
+        nabsta:actionProviderClass="com.spazomatic.nabsta.actionBar.NabstaActionProvider"/>
 
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"

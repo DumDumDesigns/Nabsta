@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.spazomatic.nabsta.actionBar.NabstaActionProvider;
 import com.spazomatic.nabsta.fragments.NavigationDrawerFragment;
 import com.spazomatic.nabsta.fragments.Studio;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
