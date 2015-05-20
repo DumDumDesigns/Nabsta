@@ -50,10 +50,13 @@ public class MasterPlayButton extends Button {
             Log.d(NabstaApplication.LOG_TAG,"MEDIASTATEHANDLER CREATED");
             AudioPlaybackManager apm = new AudioPlaybackManager(mediaStateHandler);
             Log.d(NabstaApplication.LOG_TAG,"AUDIOPLAYBACKMANAGER CREATED");
+            apm.setTrackID(i);
             apmAllTracks[i] = apm;
         }
 
     }
-
+    public AudioPlaybackManager getPlayBackManager( int trackId ){
+        return apmAllTracks[trackId];
+    }
 }
 

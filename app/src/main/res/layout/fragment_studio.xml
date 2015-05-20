@@ -1,98 +1,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:nabsta="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/studioLayout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_gravity="center"
     android:orientation="vertical"
     android:background="@color/primary_dark_material_dark">
-
+<ListView
+    android:id="@+id/list_view_tracks"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <com.spazomatic.nabsta.controls.PlayButton
-            android:id="@+id/play1"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/track_play_btn"
-            nabsta:playBackFileName="@string/track1_3gp"/>
-        <com.spazomatic.nabsta.controls.RecordButton
-            android:id="@+id/record1"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/track_record_btn"
-            nabsta:recordFileName="@string/track1_3gp"/>
-        <com.spazomatic.nabsta.views.TrackVisualizerView
-            android:id="@+id/visualizer1"
-            android:layout_width="fill_parent"
-            android:layout_height="50dp" />
-    </LinearLayout>
-
-    <LinearLayout
+        android:id="@+id/songPlayLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingTop="2dp">
-        <com.spazomatic.nabsta.controls.PlayButton
-            android:id="@+id/play2"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/track_play_btn"
-            nabsta:playBackFileName="@string/track2_3gp"/>
-        <com.spazomatic.nabsta.controls.RecordButton
-            android:id="@+id/record2"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/track_record_btn"
-            nabsta:recordFileName="@string/track2_3gp"/>
-        <com.spazomatic.nabsta.views.TrackVisualizerView
-            android:id="@+id/visualizer2"
-            android:layout_width="fill_parent"
-            android:layout_height="50dp" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="2dp">
-        <com.spazomatic.nabsta.controls.PlayButton
-            android:id="@+id/play3"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/track_play_btn"
-            nabsta:playBackFileName="@string/track3_3gp"/>
-        <com.spazomatic.nabsta.controls.RecordButton
-            android:id="@+id/record3"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/track_record_btn"
-            nabsta:recordFileName="@string/track3_3gp"/>
-        <com.spazomatic.nabsta.views.TrackVisualizerView
-            android:id="@+id/visualizer3"
-            android:layout_width="fill_parent"
-            android:layout_height="50dp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/masterTrackLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="2dp">
-        <com.spazomatic.nabsta.controls.MasterRecordButton
-            android:id="@+id/masterRecordBtn"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/master_record_btn" />
-        <com.spazomatic.nabsta.controls.MasterPlayButton
-            android:id="@+id/masterPlayBtn"
+        <com.spazomatic.nabsta.controls.SongPlayButton
+            android:id="@+id/songPlayBtn"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/master_play_btn" />
-        <com.spazomatic.nabsta.views.TrackVisualizerView
-            android:id="@+id/masterVisualizer"
-            android:layout_width="fill_parent"
-            android:layout_height="50dp" />
+
     </LinearLayout>
 
 </LinearLayout>

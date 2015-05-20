@@ -1,0 +1,25 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:nabsta="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/track_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_gravity="center"
+    android:orientation="horizontal"
+    android:background="@color/primary_dark_material_dark">
+    <com.spazomatic.nabsta.controls.TrackMuteButton
+        android:id="@+id/track_mute_btn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/track_play_btn"
+        nabsta:playBackFileName="@string/track1_3gp"/>
+    <com.spazomatic.nabsta.controls.RecordButton
+        android:id="@+id/recordBtn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/track_record_btn"
+        nabsta:recordFileName="@string/track1_3gp"/>
+    <com.spazomatic.nabsta.views.TrackVisualizerView
+        android:id="@+id/trackVisualizer"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp" />
+</LinearLayout>

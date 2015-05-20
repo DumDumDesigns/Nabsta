@@ -28,6 +28,7 @@ public class NewProjectDialog extends DialogFragment{
     public interface OnNewSongListener {
         void onNewSong(Song song);
     }
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 

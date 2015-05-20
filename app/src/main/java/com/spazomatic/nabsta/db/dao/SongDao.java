@@ -10,6 +10,8 @@ import de.greenrobot.dao.AbstractDao;
 import de.greenrobot.dao.Property;
 import de.greenrobot.dao.internal.SqlUtils;
 import de.greenrobot.dao.internal.DaoConfig;
+import de.greenrobot.dao.query.Query;
+import de.greenrobot.dao.query.QueryBuilder;
 
 import com.spazomatic.nabsta.db.Artist;
 import com.spazomatic.nabsta.db.Image;
@@ -32,15 +34,17 @@ public class SongDao extends AbstractDao<Song, Long> {
     public static class Properties {
         public final static Property Id = new Property(0, Long.class, "id", true, "_id");
         public final static Property Name = new Property(1, String.class, "name", false, "NAME");
-        public final static Property Length = new Property(2, Double.class, "length", false, "LENGTH");
-        public final static Property Time_stamp = new Property(3, java.util.Date.class, "time_stamp", false, "TIME_STAMP");
-        public final static Property Artist_id_fk = new Property(4, Long.class, "artist_id_fk", false, "ARTIST_ID_FK");
-        public final static Property Master_track_id_fk = new Property(5, Long.class, "master_track_id_fk", false, "MASTER_TRACK_ID_FK");
-        public final static Property Image_id_fk = new Property(6, Long.class, "image_id_fk", false, "IMAGE_ID_FK");
+        public final static Property Dir_name = new Property(2, String.class, "dir_name", false, "DIR_NAME");
+        public final static Property Length = new Property(3, Double.class, "length", false, "LENGTH");
+        public final static Property Time_stamp = new Property(4, java.util.Date.class, "time_stamp", false, "TIME_STAMP");
+        public final static Property Artist_id_fk = new Property(5, Long.class, "artist_id_fk", false, "ARTIST_ID_FK");
+        public final static Property Master_track_id_fk = new Property(6, Long.class, "master_track_id_fk", false, "MASTER_TRACK_ID_FK");
+        public final static Property Image_id_fk = new Property(7, Long.class, "image_id_fk", false, "IMAGE_ID_FK");
     };
 
     private DaoSession daoSession;
 
+    private Query<Song> artist_SongsQuery;
 
     public SongDao(DaoConfig config) {
         super(config);
@@ -57,11 +61,12 @@ public class SongDao extends AbstractDao<Song, Long> {
         db.execSQL("CREATE TABLE " + constraint + "'SONG' (" + //
                 "'_id' INTEGER PRIMARY KEY ," + // 0: id
                 "'NAME' TEXT," + // 1: name
-                "'LENGTH' REAL," + // 2: length
-                "'TIME_STAMP' INTEGER," + // 3: time_stamp
-                "'ARTIST_ID_FK' INTEGER," + // 4: artist_id_fk
-                "'MASTER_TRACK_ID_FK' INTEGER," + // 5: master_track_id_fk
-                "'IMAGE_ID_FK' INTEGER);"); // 6: image_id_fk
+                "'DIR_NAME' TEXT," + // 2: dir_name
+                "'LENGTH' REAL," + // 3: length
+                "'TIME_STAMP' INTEGER," + // 4: time_stamp
+                "'ARTIST_ID_FK' INTEGER," + // 5: artist_id_fk
+                "'MASTER_TRACK_ID_FK' INTEGER," + // 6: master_track_id_fk
+                "'IMAGE_ID_FK' INTEGER);"); // 7: image_id_fk
     }
 
     /** Drops the underlying database table. */
@@ -85,29 +90,34 @@ public class SongDao extends AbstractDao<Song, Long> {
             stmt.bindString(2, name);
         }
  
+        String dir_name = entity.getDir_name();
+        if (dir_name != null) {
+            stmt.bindString(3, dir_name);
+        }
+ 
         Double length = entity.getLength();
         if (length != null) {
-            stmt.bindDouble(3, length);
+            stmt.bindDouble(4, length);
         }
  
         java.util.Date time_stamp = entity.getTime_stamp();
         if (time_stamp != null) {
-            stmt.bindLong(4, time_stamp.getTime());
+            stmt.bindLong(5, time_stamp.getTime());
         }
  
         Long artist_id_fk = entity.getArtist_id_fk();
         if (artist_id_fk != null) {
-            stmt.bindLong(5, artist_id_fk);
+            stmt.bindLong(6, artist_id_fk);
         }
  
         Long master_track_id_fk = entity.getMaster_track_id_fk();
         if (master_track_id_fk != null) {
-            stmt.bindLong(6, master_track_id_fk);
+            stmt.bindLong(7, master_track_id_fk);
         }
  
         Long image_id_fk = entity.getImage_id_fk();
         if (image_id_fk != null) {
-            stmt.bindLong(7, image_id_fk);
+            stmt.bindLong(8, image_id_fk);
         }
     }
 
@@ -129,11 +139,12 @@ public class SongDao extends AbstractDao<Song, Long> {
         Song entity = new Song( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // name
-            cursor.isNull(offset + 2) ? null : cursor.getDouble(offset + 2), // length
-            cursor.isNull(offset + 3) ? null : new java.util.Date(cursor.getLong(offset + 3)), // time_stamp
-            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // artist_id_fk
-            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5), // master_track_id_fk
-            cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6) // image_id_fk
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // dir_name
+            cursor.isNull(offset + 3) ? null : cursor.getDouble(offset + 3), // length
+            cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)), // time_stamp
+            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5), // artist_id_fk
+            cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6), // master_track_id_fk
+            cursor.isNull(offset + 7) ? null : cursor.getLong(offset + 7) // image_id_fk
         );
         return entity;
     }
@@ -143,11 +154,12 @@ public class SongDao extends AbstractDao<Song, Long> {
     public void readEntity(Cursor cursor, Song entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
         entity.setName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
-        entity.setLength(cursor.isNull(offset + 2) ? null : cursor.getDouble(offset + 2));
-        entity.setTime_stamp(cursor.isNull(offset + 3) ? null : new java.util.Date(cursor.getLong(offset + 3)));
-        entity.setArtist_id_fk(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
-        entity.setMaster_track_id_fk(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
-        entity.setImage_id_fk(cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6));
+        entity.setDir_name(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setLength(cursor.isNull(offset + 3) ? null : cursor.getDouble(offset + 3));
+        entity.setTime_stamp(cursor.isNull(offset + 4) ? null : new java.util.Date(cursor.getLong(offset + 4)));
+        entity.setArtist_id_fk(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
+        entity.setMaster_track_id_fk(cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6));
+        entity.setImage_id_fk(cursor.isNull(offset + 7) ? null : cursor.getLong(offset + 7));
      }
     
     /** @inheritdoc */
@@ -173,6 +185,20 @@ public class SongDao extends AbstractDao<Song, Long> {
         return true;
     }
     
+    /** Internal query to resolve the "songs" to-many relationship of Artist. */
+    public List<Song> _queryArtist_Songs(Long artist_id_fk) {
+        synchronized (this) {
+            if (artist_SongsQuery == null) {
+                QueryBuilder<Song> queryBuilder = queryBuilder();
+                queryBuilder.where(Properties.Artist_id_fk.eq(null));
+                artist_SongsQuery = queryBuilder.build();
+            }
+        }
+        Query<Song> query = artist_SongsQuery.forCurrentThread();
+        query.setParameter(0, artist_id_fk);
+        return query.list();
+    }
+
     private String selectDeep;
 
     protected String getSelectDeep() {

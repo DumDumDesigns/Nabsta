@@ -3,7 +3,6 @@ package com.spazomatic.nabsta;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.media.MediaPlayer;
 import android.media.audiofx.Equalizer;
 import android.media.audiofx.Visualizer;
 import android.os.Message;
@@ -32,19 +31,35 @@ public class AudioPlaybackManager implements Runnable {
     private static final int FREQUENCY = 44100;
     private AudioTrack audioTrack;
     private volatile boolean isMuted;
+    private int trackID;
+
+    public int getTrackID() {
+        return trackID;
+    }
+
+    public void setTrackID(int trackID) {
+        this.trackID = trackID;
+    }
 
     public boolean isMuted() {
         return isMuted;
     }
 
     public void setIsMuted(boolean isMuted) {
+        Log.d(NabstaApplication.LOG_TAG,String.format(
+                "Mute track %s = %b",playBackFileName,isMuted));
         this.isMuted = isMuted;
-
+        if(isMuted) {
+            audioTrack.setStereoVolume(0.0f, 0.0f);
+        }else{
+            audioTrack.setStereoVolume(0.5f,0.5f);
+        }
     }
 
     public AudioPlaybackManager(MediaStateHandler mediaStateHandler) {
         this.mediaStateHandler = mediaStateHandler;
         this.playBackFileName = mediaStateHandler.getFileName();
+        //NativeAudio nativeAudio = new NativeAudio();
     }
 
 
@@ -52,13 +67,13 @@ public class AudioPlaybackManager implements Runnable {
         playWithAudioTrack();
     }
     public boolean isReady(){
-            if(mediaStateHandler.isComplete()){
-                mediaStateHandler.setIsComplete(false);
-                mediaStateHandler.begin();
-                return true;
-            } else{
-                return false;
-            }
+        if(mediaStateHandler.isComplete()){
+            mediaStateHandler.setIsComplete(false);
+            mediaStateHandler.begin();
+            return true;
+        } else{
+            return false;
+        }
     }
     public void callStopPlaying(){
 
@@ -243,38 +258,6 @@ public class AudioPlaybackManager implements Runnable {
                         "Error setting dataCapture Listener: %d",
                         resultOfSetDataCapture));
             }
-        }
-    }
-
-    private String getErrorWhatCode(int what){
-        switch(what){
-            case MediaPlayer.MEDIA_ERROR_UNKNOWN:{
-                return "MediaPlayer.MEDIA_ERROR_UNKNOWN";
-            }
-            case MediaPlayer.MEDIA_ERROR_SERVER_DIED:{
-                return "MediaPlayer.MEDIA_ERROR_SERVER_DIED";
-            }
-            default: return String.format("Error Code %d Unknown", what);
-        }
-    }
-    private String getErrorExtraCode(int extra) {
-        switch(extra){
-            case MediaPlayer.MEDIA_ERROR_IO:{
-                return "MediaPlayer.MEDIA_ERROR_IO";
-            }
-            case MediaPlayer.MEDIA_ERROR_MALFORMED:{
-                return "MediaPlayer.MEDIA_ERROR_MALFORMED";
-            }
-            case MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK:{
-                return "MediaPlayer.MEDIA_ERROR_NOT_VALID_FOR_PROGRESSIVE_PLAYBACK";
-            }
-            case MediaPlayer.MEDIA_ERROR_TIMED_OUT:{
-                return "MediaPlayer.MEDIA_ERROR_TIMED_OUT";
-            }
-            case MediaPlayer.MEDIA_ERROR_UNSUPPORTED:{
-                return "MediaPlayer.MEDIA_ERROR_UNSUPPORTED";
-            }
-            default: return String.format("Error Code %d Unknown", extra);
         }
     }
 

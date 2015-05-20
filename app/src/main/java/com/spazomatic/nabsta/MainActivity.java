@@ -63,17 +63,18 @@ public class MainActivity extends ActionBarActivity implements
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
+        /*
         Fragment fragment;
 
         switch(position){
             case 0:
-                fragment = Studio.newInstance("","");
+                fragment = Studio.newInstance("Default",1L);
                 break;
             case 1:
-                fragment = Studio.newInstance("","");
+                fragment = Studio.newInstance("Temp",1L);
                 break;
             default:
-                fragment = Studio.newInstance("","");
+                fragment = Studio.newInstance("Song",1L);
                 break;
         }
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -81,6 +82,7 @@ public class MainActivity extends ActionBarActivity implements
                 .replace(R.id.container, fragment)
                 .addToBackStack(null)
                 .commit();
+                */
     }
 
     @Override
@@ -154,11 +156,10 @@ public class MainActivity extends ActionBarActivity implements
     }
     private void openSong(Song song){
         Log.d(NabstaApplication.LOG_TAG,String.format(
-                "----------Creating New SOng %s---------------",
+                "----------Opening Project %s---------------",
                 song.getName()));
-        // update the main content by replacing fragments
         getSupportActionBar().setTitle(song.getName());
-        Fragment fragment = Studio.newInstance(song.getName(),"");
+        Fragment fragment = Studio.newInstance(song.getName(),song.getId());
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()

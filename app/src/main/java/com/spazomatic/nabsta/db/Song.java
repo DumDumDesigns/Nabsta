@@ -1,5 +1,6 @@
 package com.spazomatic.nabsta.db;
 
+import java.util.List;
 import com.spazomatic.nabsta.db.dao.DaoSession;
 import de.greenrobot.dao.DaoException;
 
@@ -16,6 +17,7 @@ public class Song {
 
     private Long id;
     private String name;
+    private String dir_name;
     private Double length;
     private java.util.Date time_stamp;
     private Long artist_id_fk;
@@ -37,6 +39,7 @@ public class Song {
     private Image image;
     private Long image__resolvedKey;
 
+    private List<Track> tracks;
 
     public Song() {
     }
@@ -45,9 +48,10 @@ public class Song {
         this.id = id;
     }
 
-    public Song(Long id, String name, Double length, java.util.Date time_stamp, Long artist_id_fk, Long master_track_id_fk, Long image_id_fk) {
+    public Song(Long id, String name, String dir_name, Double length, java.util.Date time_stamp, Long artist_id_fk, Long master_track_id_fk, Long image_id_fk) {
         this.id = id;
         this.name = name;
+        this.dir_name = dir_name;
         this.length = length;
         this.time_stamp = time_stamp;
         this.artist_id_fk = artist_id_fk;
@@ -75,6 +79,14 @@ public class Song {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDir_name() {
+        return dir_name;
+    }
+
+    public void setDir_name(String dir_name) {
+        this.dir_name = dir_name;
     }
 
     public Double getLength() {
@@ -190,6 +202,28 @@ public class Song {
             image_id_fk = image == null ? null : image.getId();
             image__resolvedKey = image_id_fk;
         }
+    }
+
+    /** To-many relationship, resolved on first access (and after reset). Changes to to-many relations are not persisted, make changes to the target entity. */
+    public List<Track> getTracks() {
+        if (tracks == null) {
+            if (daoSession == null) {
+                throw new DaoException("Entity is detached from DAO context");
+            }
+            TrackDao targetDao = daoSession.getTrackDao();
+            List<Track> tracksNew = targetDao._querySong_Tracks(id);
+            synchronized (this) {
+                if(tracks == null) {
+                    tracks = tracksNew;
+                }
+            }
+        }
+        return tracks;
+    }
+
+    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    public synchronized void resetTracks() {
+        tracks = null;
     }
 
     /** Convenient call for {@link AbstractDao#delete(Object)}. Entity must attached to an entity context. */

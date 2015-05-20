@@ -30,7 +30,15 @@ public class PlayButton extends Button {
         public void onClick(View v) {
             try {
                 //TODO: UI Design has changed, revisit again to simplify the coupling of record and playback buttons
+                //apm = MasterPlayButton.getPlayBackManager(1);
+                if(!apm.isMuted()){
+                    apm.setIsMuted(true);
+                }else{
+                    apm.setIsMuted(false);
+                }
+                /*
                 if (mediaStateHandler.isInRecordMode()) {
+
                     if (arm == null) {
                         apm = null;
                         arm = new AudioRecordManager(mediaStateHandler.getFileName(), mediaStateHandler);
@@ -55,7 +63,9 @@ public class PlayButton extends Button {
                     } else {
                         apm.callStopPlaying();
                     }
+
                 }
+                */
             }catch(Exception e){
                 Log.e(NabstaApplication.LOG_TAG,String.format("Error settingSelect %s",e.getMessage()),e);
             }
@@ -87,20 +97,6 @@ public class PlayButton extends Button {
                 "Got playBackFileName attr: %s",playBackFileName));
 
         File f = new File(NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(), fileName);
-        /*
-        if(f.setExecutable(true) == false){
-            Log.e(NabstaApplication.LOG_TAG,String.format(
-                    "Error setting Executable Permission for file %s",f.getAbsolutePath()));
-        }
-        if(!f.setReadable(true)){
-            Log.e(NabstaApplication.LOG_TAG,String.format(
-                    "Error setting Readable Permission for file %s",f.getAbsolutePath()));
-        }
-        if(!f.setWritable(true)){
-            Log.e(NabstaApplication.LOG_TAG,String.format(
-                    "Error setting Writable Permission for file %s",f.getAbsolutePath()));
-        }
-        */
         if(!f.exists()) {
             Log.d(NabstaApplication.LOG_TAG, String.format(
                     "Creating new playback file: %s",f.getName()));

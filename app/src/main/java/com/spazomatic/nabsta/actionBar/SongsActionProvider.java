@@ -90,10 +90,10 @@ public class SongsActionProvider extends ActionProvider
     }
 
     private void openSong(Song song) {
-        Bundle bundle = new Bundle();
-        bundle.putLong(SONG_ID, song.getId());
+        //Bundle bundle = new Bundle();
+        //.putLong(SONG_ID, song.getId());
         Activity activity = (Activity)((ContextThemeWrapper)context).getBaseContext();
-        DialogFragment openSongDialog = OpenProjectDialog.newInstance(bundle);
+        DialogFragment openSongDialog = OpenProjectDialog.newInstance(song.getId());
         openSongDialog.show(activity.getFragmentManager(), "OpenSongDialog");
     }
 
