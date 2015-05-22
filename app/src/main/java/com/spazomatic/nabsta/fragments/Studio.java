@@ -17,9 +17,10 @@ import android.widget.ListView;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.actionBar.SongsActionProvider;
-import com.spazomatic.nabsta.audio.TrackMessanger;
+import com.spazomatic.nabsta.audio.TrackMessenger;
 import com.spazomatic.nabsta.controls.SongPlayButton;
 import com.spazomatic.nabsta.controls.TrackMuteButton;
+import com.spazomatic.nabsta.controls.TrackRecordButton;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.Track;
 import com.spazomatic.nabsta.tasks.LoadSongTask;
@@ -96,9 +97,14 @@ public class Studio extends Fragment {
                 final List<Track> trackList = song.getTracks();
                 final ListView trackListView =
                         (ListView) studioView.findViewById(R.id.list_view_tracks);
-
+                final List<TrackMessenger> trackMessengerList = new ArrayList<>();
+                for(Track track: trackList){
+                    TrackMessenger trackMessenger = new TrackMessenger(track);
+                    trackMessenger.setTrackID(track.getId());
+                    trackMessengerList.add(trackMessenger);
+                }
                 TrackListAdapter songAdapter = new TrackListAdapter(getActivity(),
-                        android.R.layout.simple_list_item_1, trackList);
+                        android.R.layout.simple_list_item_1, trackMessengerList);
 
                 trackListView.setAdapter(songAdapter);
                 trackListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -115,7 +121,7 @@ public class Studio extends Fragment {
 
                 SongPlayButton songPlayButton =
                         (SongPlayButton) studioView.findViewById(R.id.songPlayBtn);
-                songPlayButton.setTrackMessangerList(songAdapter.getTrackMessangerList());
+                songPlayButton.setTrackMessengerList(trackMessengerList);
             }
         } catch (InterruptedException | ExecutionException e) {
             Log.e(NabstaApplication.LOG_TAG,String.format(
@@ -165,71 +171,45 @@ public class Studio extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
-        /*
-        PlayButton playTrack1Btn = (PlayButton) getView().findViewById(R.id.play1);
-        RecordButton recordButton1 = (RecordButton) getView().findViewById(R.id.record1);
-        TrackVisualizerView trackVisualizerView = (TrackVisualizerView) getView().findViewById(R.id.visualizer1);
-        recordButton1.prepareTrack();
-        playTrack1Btn.prepareTrack(trackVisualizerView, recordButton1);
-
-        PlayButton playTrack2Btn = (PlayButton) getView().findViewById(R.id.play2);
-        RecordButton recordButton2 = (RecordButton) getView().findViewById(R.id.record2);
-        TrackVisualizerView trackVisualizerView2 = (TrackVisualizerView) getView().findViewById(R.id.visualizer2);
-        recordButton2.prepareTrack();
-        playTrack2Btn.prepareTrack(trackVisualizerView2, recordButton2);
-
-        PlayButton playTrack3Btn = (PlayButton) getView().findViewById(R.id.play3);
-        RecordButton recordButton3 = (RecordButton) getView().findViewById(R.id.record3);
-
-        TrackVisualizerView trackVisualizerView3 = (TrackVisualizerView) getView().findViewById(R.id.visualizer3);
-        recordButton3.prepareTrack();
-        playTrack3Btn.prepareTrack(trackVisualizerView3, recordButton3);
-
-        MasterPlayButton masterPlayButton = (MasterPlayButton) getView().findViewById(R.id.masterPlayBtn);
-        TrackVisualizerView masterVisualizer = (TrackVisualizerView) getView().findViewById(R.id.masterVisualizer);
-        masterPlayButton.prepareMasterTrack(trackVisualizerView, trackVisualizerView2, trackVisualizerView3, masterVisualizer);
-        */
-
     }
-    private class TrackListAdapter extends ArrayAdapter<Track> {
+    private class TrackListAdapter extends ArrayAdapter<TrackMessenger> {
 
         private final Context context;
-        private final List<Track> tracks;
         //TODO: trackMessangerList may be better as a map...
-        private List<TrackMessanger> trackMessangerList;
-        public TrackListAdapter(Context context, int textViewResourceId, List<Track> objects) {
+        private final List<TrackMessenger> trackMessengers;
+
+        public TrackListAdapter(Context context, int textViewResourceId, List<TrackMessenger> objects) {
             super(context, textViewResourceId, objects);
             this.context = context;
-            this.tracks = objects;
-            this.trackMessangerList = new ArrayList<>(objects.size());
+            this.trackMessengers = objects;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
+            Log.d(NabstaApplication.LOG_TAG,"Calling getView TrackListAdapter");
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View rowView = inflater.inflate(R.layout.list_view_track, parent, false);
 
-            Track track = tracks.get(position);
-            TrackMessanger trackMessanger = new TrackMessanger(track);
-
             LinearLayout trackLayout = (LinearLayout)rowView.findViewById(R.id.track_layout);
-            TrackMuteButton trackMuteButton = (TrackMuteButton)rowView.findViewById(R.id.track_mute_btn);
-            trackMuteButton.setTrackMessanger(trackMessanger);
+            TrackMuteButton trackMuteButton =
+                    (TrackMuteButton)rowView.findViewById(R.id.track_mute_btn);
+            trackMuteButton.setOnMuteTrackListener(trackMessengers.get(position));
+
+            TrackRecordButton recordButton = (TrackRecordButton)rowView.findViewById(R.id.recordBtn);
+            recordButton.setOnRecordTrackListener(trackMessengers.get(position));
 
             TrackVisualizerView trackVisualizerView =
                     (TrackVisualizerView) rowView.findViewById(R.id.trackVisualizer);
-            trackMessanger.setTrackVisualizerView(trackVisualizerView);
-            trackMessangerList.add(trackMessanger);
+            trackMessengers.get(position).setTrackVisualizerView(trackVisualizerView);
 
             return rowView;
         }
 
         @Override
         public long getItemId(int position) {
-            return tracks.get(position).getId();
+            return trackMessengers.get(position).getTrackID();
         }
 
         @Override
@@ -237,13 +217,7 @@ public class Studio extends Fragment {
             return true;
         }
 
-        public List<TrackMessanger> getTrackMessangerList() {
-            return trackMessangerList;
-        }
 
-        public void setTrackMessangerList(List<TrackMessanger> trackMessangerList) {
-            this.trackMessangerList = trackMessangerList;
-        }
     }
 
 }

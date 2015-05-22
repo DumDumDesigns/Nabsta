@@ -56,12 +56,21 @@ public class CreateSongTask extends AsyncTask<String,Void,Song> {
             dir.mkdirs();
             song.setDir_name(dir.getAbsolutePath());
 
-            File trackFile = new File(dir, String.format("%s_%s",
+            File trackFile = new File(dir, String.format("%s_%d.PCM",
                     defaultTrack.getName(),defaultTrack.getId()));
+
             trackFile.createNewFile();
+            trackFile.setReadable(true);
+            trackFile.setWritable(true);
+            trackFile.setExecutable(true);
             defaultTrack.setFile_name(trackFile.getAbsolutePath());
-            Log.d(NabstaApplication.LOG_TAG,String.format(
+            Log.d(NabstaApplication.LOG_TAG, String.format(
                     "Created Default Track %s", defaultTrack.getFile_name()));
+            Log.d(NabstaApplication.LOG_TAG,String.format(
+                    "File %s :readable: %b: writable %b: executable %b",
+                    trackFile.getName(),trackFile.canRead(),
+                    trackFile.canWrite(),trackFile.canExecute()));
+
         } catch (IOException e) {
             Log.e(NabstaApplication.LOG_TAG,String.format(
                     "Error Creating Song with Error Message %s",

@@ -7,10 +7,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Button;
 
-import com.spazomatic.nabsta.AudioPlaybackManager;
-import com.spazomatic.nabsta.AudioRecordManager;
 import com.spazomatic.nabsta.NabstaApplication;
-import com.spazomatic.nabsta.controls.RecordButton;
 import com.spazomatic.nabsta.views.TrackVisualizerView;
 
 import java.lang.ref.WeakReference;
@@ -21,7 +18,7 @@ import java.lang.ref.WeakReference;
 public class MediaStateHandler {
 
     private  UIHandler uiHandler;
-    private RecordButton recordButton;
+    private Button recordButton;
     private Button button;
     private Context context;
     private String fileName;
@@ -42,12 +39,7 @@ public class MediaStateHandler {
         this(context, button, fileName);
         this.trackVisualizerView = trackVisualizerView;
     }
-    public MediaStateHandler(Context context, Button button, String fileName, TrackVisualizerView trackVisualizerView,RecordButton recordButton) {
-        this(context, button, fileName,trackVisualizerView);
-        this.recordButton = recordButton;
-        this.isInRecordMode = recordButton.isSelected();
-        recordButton.setMediaStateHandler(this);
-    }
+
     public MediaStateHandler(Context context, Button button, String fileName, TrackVisualizerView trackVisualizerView,boolean isOfMasterTrack) {
         this(context, button, fileName,trackVisualizerView);
         this.isOfMasterTrack = isOfMasterTrack;
@@ -96,11 +88,11 @@ public class MediaStateHandler {
         return isInRecordMode;
     }
 
-    public RecordButton getRecordButton() {
+    public Button getRecordButton() {
         return recordButton;
     }
 
-    public void setRecordButton(RecordButton recordButton) {
+    public void setRecordButton(Button recordButton) {
         this.recordButton = recordButton;
     }
 
@@ -158,6 +150,7 @@ public class MediaStateHandler {
 
             MediaStateHandler mediaStateHandler = mediaStateHandlerWeakReference.get();
             switch(msg.what){
+                /*
                 case AudioPlaybackManager.TRACK_COMPLETE_STATE:{
                     mediaStateHandler.complete();
                     break;
@@ -166,6 +159,7 @@ public class MediaStateHandler {
                     mediaStateHandler.updateVisualizer((byte[])msg.obj);
                     break;
                 }
+                */
                 default:{
                     super.handleMessage(msg);
                     break;

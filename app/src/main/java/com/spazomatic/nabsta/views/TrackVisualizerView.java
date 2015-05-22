@@ -23,6 +23,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        Log.d(NabstaApplication.LOG_TAG,"Track VisuaLIZER SURFACE Created");
         track = new Track(this);
         Canvas canvas = holder.lockCanvas();
         if(canvas != null){
@@ -50,6 +51,8 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
     public void reset(){
-        track.clearVisualizer();
+        if(track != null) {
+            track.clearVisualizer();
+        }
     }
 }
