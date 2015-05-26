@@ -1,4 +1,4 @@
-package com.spazomatic.nabsta.fragments;
+package com.spazomatic.nabsta.views.fragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -18,9 +18,9 @@ import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.actionBar.SongsActionProvider;
 import com.spazomatic.nabsta.audio.TrackMessenger;
-import com.spazomatic.nabsta.controls.SongPlayButton;
-import com.spazomatic.nabsta.controls.TrackMuteButton;
-import com.spazomatic.nabsta.controls.TrackRecordButton;
+import com.spazomatic.nabsta.views.controls.SongPlayButton;
+import com.spazomatic.nabsta.views.controls.TrackMuteButton;
+import com.spazomatic.nabsta.views.controls.TrackRecordButton;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.Track;
 import com.spazomatic.nabsta.tasks.LoadSongTask;
@@ -81,7 +81,7 @@ public class Studio extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        
+
         View studioView = inflater.inflate(R.layout.fragment_studio, container, false);
         Long songId = getArguments().getLong(SongsActionProvider.SONG_ID);
         Log.d(NabstaApplication.LOG_TAG,String.format("Search with songId %d", songId));
@@ -202,7 +202,7 @@ public class Studio extends Fragment {
 
             TrackVisualizerView trackVisualizerView =
                     (TrackVisualizerView) rowView.findViewById(R.id.trackVisualizer);
-            trackMessengers.get(position).setTrackVisualizerView(trackVisualizerView);
+            trackMessengers.get(position).setTrackStatusListener(trackVisualizerView);
 
             return rowView;
         }

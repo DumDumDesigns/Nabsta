@@ -1,4 +1,4 @@
-package com.spazomatic.nabsta.controls;
+package com.spazomatic.nabsta.views.controls;
 
 import android.content.Context;
 import android.util.AttributeSet;

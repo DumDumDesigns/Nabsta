@@ -1,4 +1,4 @@
-package com.spazomatic.nabsta.fragments;
+package com.spazomatic.nabsta.views.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;

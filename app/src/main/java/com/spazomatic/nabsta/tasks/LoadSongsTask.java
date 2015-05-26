@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.db.Song;
+import com.spazomatic.nabsta.db.dao.DaoMaster;
 import com.spazomatic.nabsta.db.dao.DaoSession;
 import com.spazomatic.nabsta.db.dao.SongDao;
 
@@ -17,7 +18,8 @@ public class LoadSongsTask extends AsyncTask<Long,Void,List<Song>> {
     @Override
     protected List<Song> doInBackground(Long... params) {
 
-        DaoSession daoSession = NabstaApplication.getInstance().getDaoSession();
+        DaoMaster daoMaster  = NabstaApplication.getInstance().getDaoMaster();
+        DaoSession daoSession = daoMaster.newSession();
         SongDao songDao = daoSession.getSongDao();
         if(params != null && params.length > 0){
             Song song = songDao.load(params[0]);

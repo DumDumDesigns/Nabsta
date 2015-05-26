@@ -18,13 +18,14 @@ import java.util.List;
  * Created by samuelsegal on 4/20/15.
  */
 public class NabstaApplication extends Application{
+
     public static final String LOG_TAG = "Nabsta";
     public static File NABSTA_ROOT_DIR;
     public static String [] ALL_TRACKS;
-    private DaoSession daoSession;
+
     private static NabstaApplication nabstaApplicationInstance;
     private static boolean activityVisible;
-
+    private DaoMaster daoMaster;
 
     public static NabstaApplication getInstance(){
         return nabstaApplicationInstance;
@@ -89,15 +90,15 @@ public class NabstaApplication extends Application{
     private void setupDataBase() {
         DataBaseOpenHelper helper = DataBaseOpenHelper.getInstance(this);
         SQLiteDatabase db = helper.getWritableDatabase();
-        DaoMaster daoMaster = new DaoMaster(db);
-        daoSession = daoMaster.newSession();
+        daoMaster = new DaoMaster(db);
+        DaoSession daoSession = daoMaster.newSession();
         List<Song> songs = daoSession.getSongDao().loadAll();
 
         Log.d(LOG_TAG,String.format("Number of Songs: %d",songs.size()));
     }
 
-    public DaoSession getDaoSession() {
-        return daoSession;
+    public DaoMaster getDaoMaster() {
+        return daoMaster;
     }
 
     public static boolean isActivityVisible() {

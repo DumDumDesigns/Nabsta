@@ -1,4 +1,4 @@
-<com.spazomatic.nabsta.controls.TrackLayout
+<com.spazomatic.nabsta.views.controls.TrackLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/track_layout"
     android:layout_width="fill_parent"
@@ -6,12 +6,12 @@
     android:layout_gravity="center"
     android:orientation="horizontal"
     android:background="@color/primary_dark_material_dark">
-    <com.spazomatic.nabsta.controls.TrackMuteButton
+    <com.spazomatic.nabsta.views.controls.TrackMuteButton
         android:id="@+id/track_mute_btn"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:background="@drawable/track_play_btn" />
-    <com.spazomatic.nabsta.controls.TrackRecordButton
+    <com.spazomatic.nabsta.views.controls.TrackRecordButton
         android:id="@+id/recordBtn"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -20,4 +20,4 @@
         android:id="@+id/trackVisualizer"
         android:layout_width="fill_parent"
         android:layout_height="50dp" />
-</com.spazomatic.nabsta.controls.TrackLayout>
+</com.spazomatic.nabsta.views.controls.TrackLayout>

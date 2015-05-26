@@ -1,7 +1,9 @@
 package com.spazomatic.nabsta;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,27 +15,31 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.spazomatic.nabsta.actionBar.NabstaActionProvider;
 import com.spazomatic.nabsta.db.Song;
-import com.spazomatic.nabsta.fragments.NavigationDrawerFragment;
-import com.spazomatic.nabsta.fragments.NewProjectDialog;
-import com.spazomatic.nabsta.fragments.OpenProjectDialog;
-import com.spazomatic.nabsta.fragments.Studio;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
+import com.spazomatic.nabsta.tasks.LoadSongTask;
+import com.spazomatic.nabsta.views.fragments.NavigationDrawerFragment;
+import com.spazomatic.nabsta.views.fragments.NewProjectDialog;
+import com.spazomatic.nabsta.views.fragments.OpenProjectDialog;
+import com.spazomatic.nabsta.views.fragments.Studio;
+
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends ActionBarActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         Studio.OnFragmentInteractionListener,
         NewProjectDialog.OnNewSongListener,
-        OpenProjectDialog.OnOpenSongListener
-{
+        OpenProjectDialog.OnOpenSongListener {
 
+    public static final String NABSTA_SHARED_PREFERENCES = "nabstaSharedPrefs";
+    public static final String CURRENT_NABSTA_PROJECT_ID = "cuurentNabstaProjId";
     private NavigationDrawerFragment navigationDrawerFragment;
     private CharSequence title;
     private BatteryLevelReceiver batteryLevelReceiver;
     private IntentFilter batteryChanged;
-    private NabstaActionProvider shareActionProvider;
-
+    private SharedPreferences sharedPreferences;
+    private Song songInSession;
+    private Menu nabstaMenu;
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -87,22 +93,17 @@ public class MainActivity extends ActionBarActivity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (!navigationDrawerFragment.isDrawerOpen()) {
+        //if (!navigationDrawerFragment.isDrawerOpen()) {
             // Only show items in the action bar relevant to this screen
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
-            getMenuInflater().inflate(R.menu.menu_main, menu);
-            //MenuItem menuItem = menu.findItem(R.id.action_project);
-            //shareActionProvider = (NabstaActionProvider) MenuItemCompat.getActionProvider(menuItem);
-            // Set history different from the default before getting the action
-            // view since a call to MenuItemCompat.getActionView() calls
-            // onCreateActionView() which uses the backing file name. Omit this
-            // line if using the default share history file is desired.
-            //shareActionProvider.setShareHistoryFileName("custom_share_history.xml");
+            nabstaMenu = menu;
+            getMenuInflater().inflate(R.menu.menu_main, nabstaMenu);
+
 
             return true;
-        }
-        return super.onCreateOptionsMenu(menu);
+       // }
+       // return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -113,6 +114,20 @@ public class MainActivity extends ActionBarActivity implements
     protected void onResume() {
         super.onResume();
         Log.d(NabstaApplication.LOG_TAG, "onResume called...");
+        sharedPreferences = getSharedPreferences(NABSTA_SHARED_PREFERENCES,
+                Context.MODE_PRIVATE);
+        if(sharedPreferences.contains(CURRENT_NABSTA_PROJECT_ID)){
+            Long songId = sharedPreferences.getLong(CURRENT_NABSTA_PROJECT_ID,0);
+            LoadSongTask loadSongTask = new LoadSongTask();
+            loadSongTask.execute(songId);
+            try {
+                songInSession = loadSongTask.get();
+                openSong(songInSession);
+            } catch (InterruptedException | ExecutionException e) {
+                Log.e(NabstaApplication.LOG_TAG, "Error loading song", e);
+            }
+
+        }
         NabstaApplication.activityResumed();
         //TODO Think of best solution for battery monitoring when has most all features developed.
         Log.d(NabstaApplication.LOG_TAG,"Register Batter receiver dynamically...");
@@ -156,15 +171,26 @@ public class MainActivity extends ActionBarActivity implements
     }
     private void openSong(Song song){
         Log.d(NabstaApplication.LOG_TAG,String.format(
-                "----------Opening Project %s---------------",
+                "----------Opening Project %s------------",
                 song.getName()));
-        getSupportActionBar().setTitle(song.getName());
-        Fragment fragment = Studio.newInstance(song.getName(),song.getId());
+        songInSession = song;
+        MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
+        currentSongMenuItem.setTitle(songInSession.getName());
+
+        Fragment fragment = Studio.newInstance(songInSession.getName(), song.getId());
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    public Song getSongInSession() {
+        return songInSession;
+    }
+
+    public void setSongInSession(Song songInSession) {
+        this.songInSession = songInSession;
     }
 }

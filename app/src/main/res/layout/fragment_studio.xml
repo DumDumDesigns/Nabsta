@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:paddingTop="2dp">
-        <com.spazomatic.nabsta.controls.SongPlayButton
+        <com.spazomatic.nabsta.views.controls.SongPlayButton
             android:id="@+id/songPlayBtn"
             android:layout_width="50dp"
             android:layout_height="50dp"

@@ -22,7 +22,7 @@
     <string name="navigation_drawer_close">Close</string>
     <string name="navigation_drawer_open">Open</string>
 
-    <string name="project">Nabsta Studio Project</string>
+    <string name="project">Nabsta Studio</string>
     <string name="new_project">New Project</string>
     <string name="manage_projects">Manage Projects</string>
     <string name="delete_project">Delete Project</string>

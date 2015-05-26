@@ -12,8 +12,8 @@ import android.view.View;
 
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
-import com.spazomatic.nabsta.fragments.ManageProjectsDialog;
-import com.spazomatic.nabsta.fragments.NewProjectDialog;
+import com.spazomatic.nabsta.views.fragments.ManageProjectsDialog;
+import com.spazomatic.nabsta.views.fragments.NewProjectDialog;
 
 /**
  * Created by samuelsegal on 5/18/15.

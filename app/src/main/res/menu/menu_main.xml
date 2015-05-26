@@ -9,10 +9,18 @@
         nabsta:showAsAction="ifRoom|withText"
         nabsta:actionProviderClass="com.spazomatic.nabsta.actionBar.NabstaActionProvider"/>
     <item
-        android:id="@+id/action_songs"
+        android:id="@+id/action_current_song"
         android:icon="@drawable/drop_down_arrow_white_24"
         android:title="@string/songs"
         android:orderInCategory="2"
+        nabsta:showAsAction="ifRoom|withText"
+        nabsta:actionProviderClass="com.spazomatic.nabsta.actionBar.CurrentSongActionProvider"/>
+
+    <item
+        android:id="@+id/action_songs"
+        android:icon="@drawable/drop_down_arrow_white_24"
+        android:title="@string/songs"
+        android:orderInCategory="3"
         nabsta:showAsAction="ifRoom|withText"
         nabsta:actionProviderClass="com.spazomatic.nabsta.actionBar.SongsActionProvider"/>
 
