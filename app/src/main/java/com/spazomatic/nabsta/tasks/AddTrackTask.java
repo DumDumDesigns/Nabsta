@@ -6,7 +6,6 @@ import android.util.Log;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.Track;
-import com.spazomatic.nabsta.db.dao.DaoMaster;
 import com.spazomatic.nabsta.db.dao.DaoSession;
 
 import java.io.File;
@@ -19,19 +18,20 @@ public class AddTrackTask extends AsyncTask<Long,Void,Track> {
     @Override
     protected Track doInBackground(Long... params) {
         Long songId = params[0];
-        DaoMaster daoMaster  = NabstaApplication.getInstance().getDaoMaster();
-        DaoSession daoSession = daoMaster.newSession();
 
+        DaoSession daoSession = NabstaApplication.getInstance().getDaoSession();
         Track track = new Track();
         track.setSong_id_fk(songId);
         track.setName("Track");
+
         daoSession.getTrackDao().insert(track);
 
         Song song = daoSession.getSongDao().load(songId);
         createTrackFile(song,track);
         track.update();
-        song.update();
 
+        track.refresh();
+        song.refresh();
         return track;
     }
 

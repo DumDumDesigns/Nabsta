@@ -18,8 +18,8 @@ import java.util.List;
 /**
  * Created by samuelsegal on 5/20/15.
  */
-public class SongPlayButton extends Button implements View.OnClickListener, TrackMessenger.TrackCompleteListener{
-
+public class SongPlayButton extends Button implements View.OnClickListener,
+        TrackMessenger.TrackCompleteListener{
 
     private UIHandler uiHandler;
     private List<TrackMessenger> trackMessengerList;
@@ -34,7 +34,6 @@ public class SongPlayButton extends Button implements View.OnClickListener, Trac
 
         }
     }
-
 
     public SongPlayButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -77,6 +76,7 @@ public class SongPlayButton extends Button implements View.OnClickListener, Trac
             setSelected(false);
         }
     }
+
     private static class UIHandler extends Handler{
         private WeakReference<SongPlayButton> songPlayButtonWeakReference;
 

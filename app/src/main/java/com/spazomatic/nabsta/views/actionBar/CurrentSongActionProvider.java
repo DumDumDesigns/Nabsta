@@ -1,4 +1,4 @@
-package com.spazomatic.nabsta.actionBar;
+package com.spazomatic.nabsta.views.actionBar;
 
 import android.content.Context;
 import android.support.v4.view.ActionProvider;

@@ -6,13 +6,11 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.spazomatic.nabsta.db.DataBaseOpenHelper;
-import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.dao.DaoMaster;
 import com.spazomatic.nabsta.db.dao.DaoSession;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by samuelsegal on 4/20/15.
@@ -25,8 +23,8 @@ public class NabstaApplication extends Application{
 
     private static NabstaApplication nabstaApplicationInstance;
     private static boolean activityVisible;
-    private DaoMaster daoMaster;
 
+    private DaoSession daoSession;
     public static NabstaApplication getInstance(){
         return nabstaApplicationInstance;
     }
@@ -90,15 +88,15 @@ public class NabstaApplication extends Application{
     private void setupDataBase() {
         DataBaseOpenHelper helper = DataBaseOpenHelper.getInstance(this);
         SQLiteDatabase db = helper.getWritableDatabase();
-        daoMaster = new DaoMaster(db);
-        DaoSession daoSession = daoMaster.newSession();
-        List<Song> songs = daoSession.getSongDao().loadAll();
-
-        Log.d(LOG_TAG,String.format("Number of Songs: %d",songs.size()));
+        DaoMaster daoMaster = new DaoMaster(db);
+        daoSession = daoMaster.newSession();
     }
 
-    public DaoMaster getDaoMaster() {
-        return daoMaster;
+    public DaoSession getDaoSession() {
+        if(daoSession == null){
+            setupDataBase();
+        }
+        return daoSession;
     }
 
     public static boolean isActivityVisible() {

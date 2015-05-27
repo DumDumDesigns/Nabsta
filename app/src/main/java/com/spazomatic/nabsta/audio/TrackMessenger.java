@@ -27,7 +27,7 @@ import java.io.OutputStream;
  */
 public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackListener,
         TrackRecordButton.OnRecordTrackListener{
-    private static int trackCount = 0;
+
     private Track track;
     private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(
             44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
@@ -39,10 +39,8 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
     private volatile boolean isRecording;
     private TrackStatusListener trackStatusListener;
     private TrackCompleteListener trackCompleteListener;
-    public TrackMessenger(Track track) {
-        this.track = track;
-    }
 
+    private static int trackCount = 0;
     private synchronized void increaseTrackCount(){
          ++trackCount;
     }
@@ -51,6 +49,11 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
     }
     public synchronized int getTrackCount(){
         return trackCount;
+    }
+    private static int threadCount = 0;
+    public TrackMessenger(Track track) {
+        this.track = track;
+        Log.d(NabstaApplication.LOG_TAG,String.format("TrackMessenger created %d threads",++threadCount));
     }
 
     public interface TrackStatusListener{
@@ -113,7 +116,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
 
     private void recordTrack() throws IOException{
         File file = new File(track.getFile_name());
-
+/*
         if (file.exists()) {
             if(!file.delete()){
                 //TODO:Propagate Unexpected Errors such as these to end user.
@@ -122,13 +125,14 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                         file.getAbsolutePath()));
             }
         }
+
         if(!file.createNewFile()){
             //TODO:Propagate Unexpected Errors such as these to end user.
             Log.e(NabstaApplication.LOG_TAG,String.format(
                     "Error Creating File %s Cancelling Record...",
                     file.getAbsolutePath()));
         }
-
+*/
         OutputStream os = new FileOutputStream(file);
         BufferedOutputStream bos = new BufferedOutputStream(os);
         DataOutputStream dos = new DataOutputStream(bos);

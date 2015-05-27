@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
-import com.spazomatic.nabsta.actionBar.SongsActionProvider;
+import com.spazomatic.nabsta.views.actionBar.SongsActionProvider;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.tasks.LoadSongTask;
 

@@ -16,15 +16,15 @@ import android.widget.ListView;
 
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
-import com.spazomatic.nabsta.actionBar.SongsActionProvider;
 import com.spazomatic.nabsta.audio.TrackMessenger;
-import com.spazomatic.nabsta.views.controls.SongPlayButton;
-import com.spazomatic.nabsta.views.controls.TrackMuteButton;
-import com.spazomatic.nabsta.views.controls.TrackRecordButton;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.Track;
 import com.spazomatic.nabsta.tasks.LoadSongTask;
 import com.spazomatic.nabsta.views.TrackVisualizerView;
+import com.spazomatic.nabsta.views.actionBar.SongsActionProvider;
+import com.spazomatic.nabsta.views.controls.SongPlayButton;
+import com.spazomatic.nabsta.views.controls.TrackMuteButton;
+import com.spazomatic.nabsta.views.controls.TrackRecordButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ public class Studio extends Fragment {
 
     private String songName;
     private Long songId;
-
+    private View studioView;
     private OnFragmentInteractionListener mListener;
 
     /**
@@ -82,7 +82,51 @@ public class Studio extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View studioView = inflater.inflate(R.layout.fragment_studio, container, false);
+        studioView = inflater.inflate(R.layout.fragment_studio, container, false);
+        return studioView;
+    }
+
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onFragmentInteraction(uri);
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnFragmentInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        void onFragmentInteraction(Uri uri);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
         Long songId = getArguments().getLong(SongsActionProvider.SONG_ID);
         Log.d(NabstaApplication.LOG_TAG,String.format("Search with songId %d", songId));
         LoadSongTask loadSongTask = new LoadSongTask();
@@ -127,51 +171,9 @@ public class Studio extends Fragment {
             Log.e(NabstaApplication.LOG_TAG,String.format(
                     "Error creating TrackAdapter with error message %s", e.getMessage()),e);
         }
-        return studioView;
+
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
     private class TrackListAdapter extends ArrayAdapter<TrackMessenger> {
 
         private final Context context;
@@ -190,17 +192,17 @@ public class Studio extends Fragment {
             Log.d(NabstaApplication.LOG_TAG,"Calling getView TrackListAdapter");
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View rowView = inflater.inflate(R.layout.list_view_track, parent, false);
+            final View rowView = inflater.inflate(R.layout.list_view_track, parent, false);
 
-            LinearLayout trackLayout = (LinearLayout)rowView.findViewById(R.id.track_layout);
-            TrackMuteButton trackMuteButton =
+            final LinearLayout trackLayout = (LinearLayout)rowView.findViewById(R.id.track_layout);
+            final TrackMuteButton trackMuteButton =
                     (TrackMuteButton)rowView.findViewById(R.id.track_mute_btn);
             trackMuteButton.setOnMuteTrackListener(trackMessengers.get(position));
 
-            TrackRecordButton recordButton = (TrackRecordButton)rowView.findViewById(R.id.recordBtn);
+            final TrackRecordButton recordButton = (TrackRecordButton)rowView.findViewById(R.id.recordBtn);
             recordButton.setOnRecordTrackListener(trackMessengers.get(position));
 
-            TrackVisualizerView trackVisualizerView =
+            final TrackVisualizerView trackVisualizerView =
                     (TrackVisualizerView) rowView.findViewById(R.id.trackVisualizer);
             trackMessengers.get(position).setTrackStatusListener(trackVisualizerView);
 

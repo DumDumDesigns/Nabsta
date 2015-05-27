@@ -72,6 +72,7 @@ public class TrackVisualizerView extends SurfaceView implements
         reset();
         //trackVisualizerView.setTrackDuration(trackPlayer.getDuration());
         trackVisualizer = new Visualizer(audioSessionId);
+        trackVisualizer.setEnabled(false);
         trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
         Log.d(NabstaApplication.LOG_TAG, String.format("CaptureSize: %d", trackVisualizer.getCaptureSize()));
         //TODO: Test Best capture rate, currently set to Visualizer.getMaxCaptureRate(), Android example does Visualizer.getMaxCaptureRate()/2
