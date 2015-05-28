@@ -1,7 +1,9 @@
 package com.spazomatic.nabsta.views;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.SurfaceView;
@@ -16,6 +18,9 @@ public class Sprite {
     private float[] mPoints;
     private Rect mRect = new Rect();
     private Paint mForePaint = new Paint();
+    private Canvas bitmapCanvas;
+    private Bitmap bitmap;
+    private Matrix identityMatrix;
 
     public Sprite(){
 
@@ -24,9 +29,12 @@ public class Sprite {
         mForePaint.setColor(Color.BLUE);
     }
 
-    public void init(SurfaceView surfaceView){
+    public void init(TrackVisualizerView surfaceView){
 
         bounds = new Rect(0,0,1, surfaceView.getHeight());
+        bitmap = surfaceView.getCanvasBitmap();
+        bitmapCanvas = surfaceView.getBitmapCanvas();
+        identityMatrix = surfaceView.getIdentityMatrix();
     }
     public void updateVisualizer(byte[] bytes, Canvas canvas) {
         mBytes = bytes;
@@ -56,13 +64,16 @@ public class Sprite {
         }
 
         bounds = new Rect(mRect.left+1,mRect.top,mRect.left+2,mRect.bottom);
-        canvas.drawLines(mPoints, mForePaint);
-
+        bitmapCanvas.drawLines(mPoints, mForePaint);
+        //canvas.drawLines(mPoints, mForePaint);
+        canvas.drawBitmap(bitmap,identityMatrix,null);
     }
     public void clearVisualizer(SurfaceView surfaceView, Canvas canvas){
         bounds = new Rect(0,0,1, surfaceView.getHeight());
         canvas.drawColor(Color.CYAN);
     }
+
+
     public Rect getBounds(){
         return bounds;
     }

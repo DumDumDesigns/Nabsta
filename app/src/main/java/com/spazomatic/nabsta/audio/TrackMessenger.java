@@ -27,6 +27,8 @@ import java.io.OutputStream;
  */
 public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackListener,
         TrackRecordButton.OnRecordTrackListener{
+    private final static String LOG_TAG = String.format(
+            "Nabsta: %s", TrackMessenger.class.getSimpleName());
 
     private Track track;
     private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(
@@ -47,24 +49,15 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
     private synchronized int decreaseTrackCount(){
          return --trackCount;
     }
-    public synchronized int getTrackCount(){
-        return trackCount;
-    }
+
     private static int threadCount = 0;
     public TrackMessenger(Track track) {
         this.track = track;
-        Log.d(NabstaApplication.LOG_TAG,String.format("TrackMessenger created %d threads",++threadCount));
+        Log.d(NabstaApplication.LOG_TAG,String.format(
+                "TrackMessenger created %d threads",++threadCount));
     }
 
-    public interface TrackStatusListener{
-        void trackBegin(int audioSessionId);
-        void trackComplete();
 
-    }
-    public interface TrackCompleteListener{
-        //for master controller songPlayButton
-        void onTrackFinished(int trackCount);
-    }
     @Override
     public void run() {
 
@@ -82,6 +75,13 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
     }
 
     private void playTrack(){
+        Log.d(LOG_TAG,String.format("----------PLAY TRACk %s-------------", track.getName()));
+        byte[] trackBytes = convertStreamToByteArray(track.getFile_name());
+        if(trackBytes == null || trackBytes.length <=0 ){
+            Log.d(NabstaApplication.LOG_TAG,String.format(
+                    "File %s Empty", track.getFile_name()));
+            return;
+        }
         try {
             audioTrack = new AudioTrack(
                     AudioManager.STREAM_MUSIC,
@@ -90,12 +90,8 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                     AudioFormat.ENCODING_PCM_16BIT,
                     MIN_BUFF_SIZE,
                     AudioTrack.MODE_STREAM);
-
-            byte[] trackBytes = convertStreamToByteArray(track.getFile_name());
-
-
             audioTrack.play();
-            callListenersTrackBegin(audioTrack.getAudioSessionId());
+            callListenersTrackBegin(audioTrack.getAudioSessionId(), false);
             int numberOfBytesWritten = audioTrack.write(trackBytes, 0, trackBytes.length);
             if (numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
                     numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
@@ -106,9 +102,9 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                     "Wrote %d bytes to Track %s.", numberOfBytesWritten, track.getFile_name()
             ));
         }finally {
-            stopTrack();
+            stopTrack(false);
         }
-
+        Log.d(LOG_TAG,String.format("----------END PLAY TRACk %s-------------", track.getName()));
 
     }
 
@@ -133,6 +129,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                     file.getAbsolutePath()));
         }
 */
+        Log.d(LOG_TAG,String.format("----------RECORD TRACk %s-------------", track.getName()));
         OutputStream os = new FileOutputStream(file);
         BufferedOutputStream bos = new BufferedOutputStream(os);
         DataOutputStream dos = new DataOutputStream(bos);
@@ -161,7 +158,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
 
             audioRecord.startRecording();
             audioTrack.play();
-            callListenersTrackBegin(audioTrack.getAudioSessionId());
+            callListenersTrackBegin(audioTrack.getAudioSessionId(), true);
             while (isRecording) {
                 int bufferReadResult = audioRecord.read(buffer, 0, MIN_BUFF_SIZE);
                 for (int i = 0; i < bufferReadResult; i++) {
@@ -177,7 +174,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
             Log.e(NabstaApplication.LOG_TAG, String.format(
                     "Error Recording File %s",file.getAbsolutePath()), e);
         }finally{
-            stopTrack();
+            stopTrack(true);
             try {
                 if(dos != null) {
                     dos.close();
@@ -194,6 +191,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                         e.getMessage()),e);
             }
         }
+        Log.d(LOG_TAG,String.format("----------END RECORD TRACk %s-------------", track.getName()));
     }
 
 
@@ -292,7 +290,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
             Log.e(NabstaApplication.LOG_TAG, "Error Writing bytes to Mix Track");
 
         }
-        stopTrack();
+        stopTrack(true);
 
     }
     @Override
@@ -329,6 +327,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
 
     public void setIsRecording(boolean isRecording) {
         this.isRecording = isRecording;
+        trackStatusListener.loadTrackBitMap(track,isRecording);
     }
 
 
@@ -354,10 +353,10 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
             audioTrack = null;
         }
     }
-    private void stopTrack(){
+    private void stopTrack(boolean isDisplayWaveFormRealTime){
         Log.d(NabstaApplication.LOG_TAG, "stopTrack() called.");
 
-        callListenersTrackComplete();
+        callListenersTrackComplete(isDisplayWaveFormRealTime);
         if(audioRecord != null){
             isRecording = false;
             //audioRecord.stop();
@@ -370,17 +369,34 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
             audioTrack = null;
         }
     }
+
+    public interface TrackStatusListener{
+        void loadTrackBitMap(Track track, boolean realTimeWaveForm);
+        void trackBegin(int audioSessionId);
+        void trackComplete();
+    }
+
+    public interface TrackCompleteListener{
+        //for master controller songPlayButton
+        void onTrackFinished(int trackCount);
+    }
+
     public void setTrackStatusListener(TrackStatusListener trackStatusListener){
         this.trackStatusListener = trackStatusListener;
+        this.trackStatusListener.loadTrackBitMap(track, true);
     }
-    private void callListenersTrackComplete() {
-        trackStatusListener.trackComplete();
+    private void callListenersTrackComplete(boolean isDisplayWaveFormRealTIme) {
+        if(isDisplayWaveFormRealTIme) {
+            trackStatusListener.trackComplete();
+        }
         trackCompleteListener.onTrackFinished(decreaseTrackCount());
 
     }
-    private void callListenersTrackBegin(int audioSessionId) {
+    private void callListenersTrackBegin(int audioSessionId, boolean isDisplayWaveFormRealTIme) {
         increaseTrackCount();
-        trackStatusListener.trackBegin(audioSessionId);
+        if(isDisplayWaveFormRealTIme) {
+            trackStatusListener.trackBegin(audioSessionId);
+        }
 
     }
 

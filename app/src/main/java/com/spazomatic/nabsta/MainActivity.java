@@ -14,10 +14,12 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
 import com.spazomatic.nabsta.tasks.LoadSongTask;
+import com.spazomatic.nabsta.views.actionBar.CurrentSongActionProvider;
 import com.spazomatic.nabsta.views.fragments.NavigationDrawerFragment;
 import com.spazomatic.nabsta.views.fragments.NewProjectDialog;
 import com.spazomatic.nabsta.views.fragments.OpenProjectDialog;
@@ -29,10 +31,9 @@ public class MainActivity extends ActionBarActivity implements
         NavigationDrawerFragment.NavigationDrawerCallbacks,
         Studio.OnFragmentInteractionListener,
         NewProjectDialog.OnNewSongListener,
-        OpenProjectDialog.OnOpenSongListener {
+        OpenProjectDialog.OnOpenSongListener,
+        CurrentSongActionProvider.OnAddTrackListener{
 
-    public static final String NABSTA_SHARED_PREFERENCES = "nabstaSharedPrefs";
-    public static final String CURRENT_NABSTA_PROJECT_ID = "cuurentNabstaProjId";
     private NavigationDrawerFragment navigationDrawerFragment;
     private CharSequence title;
     private BatteryLevelReceiver batteryLevelReceiver;
@@ -47,6 +48,9 @@ public class MainActivity extends ActionBarActivity implements
         //Hardware buttons setting to adjust the media
 
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
+                Context.MODE_PRIVATE);
 
         setContentView(R.layout.activity_main);
         navigationDrawerFragment = (NavigationDrawerFragment)
@@ -99,8 +103,6 @@ public class MainActivity extends ActionBarActivity implements
             // decide what to show in the action bar.
             nabstaMenu = menu;
             getMenuInflater().inflate(R.menu.menu_main, nabstaMenu);
-
-
             return true;
        // }
        // return super.onCreateOptionsMenu(menu);
@@ -114,10 +116,10 @@ public class MainActivity extends ActionBarActivity implements
     protected void onResume() {
         super.onResume();
         Log.d(NabstaApplication.LOG_TAG, "onResume called...");
-        sharedPreferences = getSharedPreferences(NABSTA_SHARED_PREFERENCES,
+        sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
                 Context.MODE_PRIVATE);
-        if(sharedPreferences.contains(CURRENT_NABSTA_PROJECT_ID)){
-            Long songId = sharedPreferences.getLong(CURRENT_NABSTA_PROJECT_ID,0);
+        if(sharedPreferences.contains(NabstaApplication.NABSTA_CURRENT_PROJECT_ID)){
+            Long songId = sharedPreferences.getLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID,0);
             LoadSongTask loadSongTask = new LoadSongTask();
             loadSongTask.execute(songId);
             try {
@@ -127,6 +129,14 @@ public class MainActivity extends ActionBarActivity implements
                 Log.e(NabstaApplication.LOG_TAG, "Error loading song", e);
             }
 
+        }
+        if(sharedPreferences.contains(NabstaApplication.NABSTA_KEEP_SCREEN_ON)){
+            if(sharedPreferences.getBoolean(NabstaApplication.NABSTA_KEEP_SCREEN_ON,true)) {
+                Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",true));
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }else{
+                Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",false));
+            }
         }
         NabstaApplication.activityResumed();
         //TODO Think of best solution for battery monitoring when has most all features developed.
@@ -192,5 +202,11 @@ public class MainActivity extends ActionBarActivity implements
 
     public void setSongInSession(Song songInSession) {
         this.songInSession = songInSession;
+    }
+
+    @Override
+    public void onAddTrack(Song song) {
+        //TODO: Do not reopen whole song, should just add track view
+        openSong(song);
     }
 }

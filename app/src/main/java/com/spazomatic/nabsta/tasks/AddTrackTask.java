@@ -15,6 +15,9 @@ import java.io.IOException;
  * Created by samuelsegal on 5/19/15.
  */
 public class AddTrackTask extends AsyncTask<Long,Void,Track> {
+
+    private final static String LOG_TAG = String.format(
+            "Nabsta: %s", AddTrackTask.class.getSimpleName());
     @Override
     protected Track doInBackground(Long... params) {
         Long songId = params[0];
@@ -41,7 +44,9 @@ public class AddTrackTask extends AsyncTask<Long,Void,Track> {
             String songDirName = String.format("%s_%d",song.getName(),song.getId());
             File dir = new File(NabstaApplication.NABSTA_ROOT_DIR,songDirName);
 
-
+            String trackImageFileName = String.format(
+                    "%s%s%s%s",dir.getAbsolutePath(),"/trackView_",defaultTrack.getId(),".jpg");
+            defaultTrack.setBitmap_file_name(trackImageFileName);
 
             File trackFile = new File(dir, String.format("%s_%d.PCM",
                     defaultTrack.getName(),defaultTrack.getId()));
@@ -51,10 +56,11 @@ public class AddTrackTask extends AsyncTask<Long,Void,Track> {
             trackFile.setWritable(true);
             trackFile.setExecutable(true);
             defaultTrack.setFile_name(trackFile.getAbsolutePath());
-            Log.d(NabstaApplication.LOG_TAG, String.format(
-                    "Created Default Track %s", defaultTrack.getFile_name()));
-            Log.d(NabstaApplication.LOG_TAG,String.format(
-                    "File %s :readable: %b: writable %b: executable %b",
+            Log.d(LOG_TAG, String.format(
+                    "Created Default Track %s with image file %s",
+                    defaultTrack.getFile_name(), defaultTrack.getBitmap_file_name()));
+            Log.d(LOG_TAG,String.format(
+                    "Track File %s :readable: %b: writable %b: executable %b",
                     trackFile.getName(),trackFile.canRead(),
                     trackFile.canWrite(),trackFile.canExecute()));
 

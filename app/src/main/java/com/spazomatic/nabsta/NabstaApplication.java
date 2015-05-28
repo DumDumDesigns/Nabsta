@@ -18,6 +18,9 @@ import java.io.IOException;
 public class NabstaApplication extends Application{
 
     public static final String LOG_TAG = "Nabsta";
+    public static final String NABSTA_SHARED_PREFERENCES = "NABSTA_SHARED_PREFERENCES";
+    public static final String NABSTA_CURRENT_PROJECT_ID = "NABSTA_CURRENT_PROJECT_ID";
+    public static final String NABSTA_KEEP_SCREEN_ON = "NABSTA_KEEP_SCREEN_ON";
     public static File NABSTA_ROOT_DIR;
     public static String [] ALL_TRACKS;
 
@@ -96,6 +99,7 @@ public class NabstaApplication extends Application{
         if(daoSession == null){
             setupDataBase();
         }
+        daoSession.clear();
         return daoSession;
     }
 

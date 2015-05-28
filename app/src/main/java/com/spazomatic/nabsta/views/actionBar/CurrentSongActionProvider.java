@@ -2,12 +2,14 @@ package com.spazomatic.nabsta.views.actionBar;
 
 import android.content.Context;
 import android.support.v4.view.ActionProvider;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 
 import com.spazomatic.nabsta.MainActivity;
+import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.tasks.AddTrackTask;
@@ -20,6 +22,11 @@ public class CurrentSongActionProvider extends ActionProvider {
     private Context context;
     private MenuItem addTrackMenuItem;
     public static final String SONG_ID = "songId";
+    private OnAddTrackListener resetStudioFragment;
+
+    public interface OnAddTrackListener{
+        void onAddTrack(Song song);
+    }
     /**
      * Creates a new instance.
      *
@@ -28,7 +35,8 @@ public class CurrentSongActionProvider extends ActionProvider {
     public CurrentSongActionProvider(Context context) {
         super(context);
         this.context = context;
-
+        Log.d(NabstaApplication.LOG_TAG, "CurrentSong ActionProvider onCreateActionView");
+        resetStudioFragment = (OnAddTrackListener)((ContextThemeWrapper)context).getBaseContext();
     }
 
     @Override
@@ -48,7 +56,7 @@ public class CurrentSongActionProvider extends ActionProvider {
                 final Song song = activity.getSongInSession();
                 AddTrackTask addTrackTask = new AddTrackTask();
                 addTrackTask.execute(song.getId());
-                //TODO:update Studio fragment with new view for track
+                resetStudioFragment.onAddTrack(song);
                 return true;
             }
         });

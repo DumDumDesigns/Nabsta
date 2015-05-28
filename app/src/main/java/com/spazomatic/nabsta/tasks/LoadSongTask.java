@@ -15,6 +15,7 @@ public class LoadSongTask extends AsyncTask<Long,Void,Song> {
     protected Song doInBackground(Long... params) {
         Long songId = params[0];
         DaoSession daoSession  = NabstaApplication.getInstance().getDaoSession();
+
         SongDao songDao = daoSession.getSongDao();
         Song song = songDao.load(songId);
         songDao.refresh(song);

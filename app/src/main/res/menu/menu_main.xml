@@ -23,9 +23,5 @@
         android:orderInCategory="3"
         nabsta:showAsAction="ifRoom|withText"
         nabsta:actionProviderClass="com.spazomatic.nabsta.views.actionBar.SongsActionProvider"/>
-
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        nabsta:showAsAction="never" />
+    
 </menu>
