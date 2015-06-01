@@ -14,6 +14,7 @@ import android.view.SurfaceView;
 public class Sprite {
 
     private Rect bounds;
+    private double[] fft;
     private byte[] mBytes;
     private float[] mPoints;
     private Rect mRect = new Rect();
@@ -40,6 +41,38 @@ public class Sprite {
         mBytes = bytes;
         draw(canvas);
     }
+    public void updateVisualizer(double[] bytes, Canvas canvas) {
+        fft = bytes;
+        drawFFT(canvas);
+    }
+
+    private void drawFFT(Canvas canvas) {
+        if (fft == null) {
+            return;
+        }
+
+        if (mPoints == null || mPoints.length < fft.length * 4) {
+            mPoints = new float[fft.length * 4];
+        }
+        int left = bounds.left;
+        int right = bounds.right;
+        mRect = new Rect(left, bounds.top, right, bounds.bottom);
+        //StringBuilder sb = new StringBuilder(fft.length);
+        for (int i = 0; i < fft.length - 1; i++) {
+            mPoints[i * 4] = mRect.left + i / (fft.length - 1);
+            mPoints[i * 4 + 1] = mRect.height() / 2
+                    + ((byte) (fft[i] + 128)) * (mRect.height() / 2) / 128;
+            mPoints[i * 4 + 2] = mRect.left + (i + 1) / (fft.length - 1);
+            mPoints[i * 4 + 3] = mRect.height() / 2
+                    + ((byte) (fft[i + 1] + 128)) * (mRect.height() / 2) / 128;
+            //sb.append(String.format("points %f %f %f %f %n", mPoints[i*4],mPoints[i*4+1],mPoints[i*4+2],mPoints[i*4+3]));
+        }
+        //Log.d(NabstaApplication.LOG_TAG,sb.toString());
+        bounds = new Rect(mRect.left+1,mRect.top,mRect.left+2,mRect.bottom);
+        bitmapCanvas.drawLines(mPoints, mForePaint);
+
+        canvas.drawBitmap(bitmap,identityMatrix,null);
+    }
 
     private void draw(Canvas canvas){
         if (mBytes == null) {
@@ -52,7 +85,7 @@ public class Sprite {
         int left = bounds.left;
         int right = bounds.right;
         mRect = new Rect(left, bounds.top, right, bounds.bottom);
-        //StringBuilder sb = new StringBuilder(mBytes.length);
+       // StringBuilder sb = new StringBuilder(mBytes.length);
         for (int i = 0; i < mBytes.length - 1; i++) {
             mPoints[i * 4] = mRect.left + i / (mBytes.length - 1);
             mPoints[i * 4 + 1] = mRect.height() / 2
@@ -62,7 +95,7 @@ public class Sprite {
                     + ((byte) (mBytes[i + 1] + 128)) * (mRect.height() / 2) / 128;
             //sb.append(String.format("points %f %f %f %f %n", mPoints[i*4],mPoints[i*4+1],mPoints[i*4+2],mPoints[i*4+3]));
         }
-
+       // Log.d(NabstaApplication.LOG_TAG,sb.toString());
         bounds = new Rect(mRect.left+1,mRect.top,mRect.left+2,mRect.bottom);
         bitmapCanvas.drawLines(mPoints, mForePaint);
         //canvas.drawLines(mPoints, mForePaint);

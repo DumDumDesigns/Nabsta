@@ -31,9 +31,10 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
             "Nabsta: %s", TrackMessenger.class.getSimpleName());
 
     private Track track;
-    private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(
-            44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
     private static final int FREQUENCY = 44100;
+    private static final int MIN_BUFF_SIZE= AudioTrack.getMinBufferSize(
+            FREQUENCY, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+
     private AudioTrack audioTrack;
     private AudioRecord audioRecord;
     private volatile boolean isMuted;

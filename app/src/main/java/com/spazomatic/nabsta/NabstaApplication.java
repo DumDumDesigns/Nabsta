@@ -1,16 +1,22 @@
 package com.spazomatic.nabsta;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
 
 import com.spazomatic.nabsta.db.DataBaseOpenHelper;
+import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.dao.DaoMaster;
 import com.spazomatic.nabsta.db.dao.DaoSession;
+import com.spazomatic.nabsta.tasks.CreateSongTask;
+import com.spazomatic.nabsta.tasks.LoadSongsTask;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by samuelsegal on 4/20/15.
@@ -26,6 +32,7 @@ public class NabstaApplication extends Application{
 
     private static NabstaApplication nabstaApplicationInstance;
     private static boolean activityVisible;
+    private static Song songInSession;
 
     private DaoSession daoSession;
     public static NabstaApplication getInstance(){
@@ -52,42 +59,38 @@ public class NabstaApplication extends Application{
             NABSTA_ROOT_DIR.mkdirs();
         }
 
-        //TODO: TEMP SOLUTION WAITING FOR BEST IDEA to handle the common multiple tracks every project will need.
-        //FOR NOW get all tracks or create track1,track2, track3, etc.., if first launch of app.
-        String[] tracks = {"track1.3gp", "track2.3gp", "track3.3gp"};
-        ALL_TRACKS = new String[tracks.length];
-        int i = 0;
-        for(String fileName : tracks) {
-            String playBackFileName = String.format("%s%s%s",
-                    NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(),"/",fileName);
-            Log.d(NabstaApplication.LOG_TAG, "Got playBackFileName attr: " + playBackFileName);
-
-            File f = new File(NabstaApplication.NABSTA_ROOT_DIR.getAbsolutePath(), fileName);
-            f.setExecutable(true);
-            f.setReadable(true);
-            f.setWritable(true);
-            if (!f.exists()) {
-                Log.d(NabstaApplication.LOG_TAG, String.format(
-                        "Creating new playback file: %s", f.getName()));
-                try {
-                    f.createNewFile();
-                } catch (IOException e) {
-                    Log.e(NabstaApplication.LOG_TAG, String.format(
-                            "Error Creating File: %s: Error Message: %s",
-                            f.getAbsolutePath(),e.getMessage()));
-                }
-            } else {
-                Log.d(NabstaApplication.LOG_TAG, String.format(
-                        "Playback file exists: %s", f.getName()));
-            }
-            Log.d(LOG_TAG, String.format("Adding track %s to ALL_TRACKS",playBackFileName));
-            ALL_TRACKS[i++] = playBackFileName;
-        }
-        
         setupDataBase();
+        LoadSongsTask loadSongsTask = new LoadSongsTask();
+        loadSongsTask.execute();
+        List<Song> songs = null;
+        try {
+            songs = loadSongsTask.get();
+            if(songs == null | songs.isEmpty()){
+                Song exampleSong = createSong("Example Project","Example Artist");
+                setSongInSession(exampleSong);
+                SharedPreferences sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
+                        Context.MODE_PRIVATE);
+                final SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID,exampleSong.getId());
+                editor.commit();
 
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG,"Error loading songs",e);
+        }
     }
-
+    private Song createSong(String songNameValue, String artistNameValue) {
+        try {
+            CreateSongTask createSongTask = new CreateSongTask();
+            String [] params = {songNameValue,artistNameValue};
+            createSongTask.execute(params);
+            Song song = createSongTask.get();
+            return song;
+        }catch(Exception e){
+            Log.e(NabstaApplication.LOG_TAG,"Error Saving to Database",e);
+        }
+        return null;
+    }
     private void setupDataBase() {
         DataBaseOpenHelper helper = DataBaseOpenHelper.getInstance(this);
         SQLiteDatabase db = helper.getWritableDatabase();
@@ -101,6 +104,14 @@ public class NabstaApplication extends Application{
         }
         daoSession.clear();
         return daoSession;
+    }
+
+    public static Song getSongInSession() {
+        return songInSession;
+    }
+
+    public static void setSongInSession(Song songInSession) {
+        NabstaApplication.songInSession = songInSession;
     }
 
     public static boolean isActivityVisible() {

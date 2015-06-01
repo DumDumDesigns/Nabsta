@@ -34,6 +34,13 @@ public class TrackView {
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
     }
+    public void draw(double[] bytes) {
+        Canvas canvas = surfaceHolder.lockCanvas(measure.getBounds());
+        if (canvas != null) {
+            measure.updateVisualizer(bytes, canvas);
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }
+    }
 
     public void clearVisualizer() {
         Canvas canvas = surfaceHolder.lockCanvas();

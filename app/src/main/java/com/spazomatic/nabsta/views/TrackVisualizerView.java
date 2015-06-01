@@ -132,7 +132,9 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     public void trackBegin(int audioSessionId) {
         Log.d(NabstaApplication.LOG_TAG,"Setting up the feckin visualizer");
         reset();
-
+        if(audioSessionId == 0){
+            return;
+        }
         trackVisualizer = new Visualizer(audioSessionId);
         trackVisualizer.setEnabled(false);
         trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
@@ -163,6 +165,18 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
 
+
+    private void updateVisualizer(double[] fft) {
+        try {
+            if(trackView == null){
+                trackView = new TrackView(this);
+            }
+            trackView.draw(fft);
+        }catch(Exception e){
+            Log.e(LOG_TAG,"Error drawing trackView",e);
+        }
+    }
+
     @Override
     public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
         updateVisualizer(waveform);
@@ -170,7 +184,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-        //Not implementing yet
+
     }
     private void storeImage(Bitmap image,String bitmapFileName) {
         try {
