@@ -50,7 +50,7 @@ public class MainActivity extends ActionBarActivity implements
 
         setContentView(R.layout.activity_main);
         title = getTitle();
-;
+
         batteryLevelReceiver = new BatteryLevelReceiver();
         batteryChanged = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     }
@@ -58,17 +58,20 @@ public class MainActivity extends ActionBarActivity implements
     @Override
     protected void onStart() {
         super.onStart();
+        Log.d(NabstaApplication.LOG_TAG, "MainActivity onStart called...");
     }
 
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.d(NabstaApplication.LOG_TAG,"onCreateOptions");
+        Log.d(NabstaApplication.LOG_TAG,"MainActivity onCreateOptions");
         nabstaMenu = menu;
         getMenuInflater().inflate(R.menu.menu_main, nabstaMenu);
-        MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
-        currentSongMenuItem.setTitle(NabstaApplication.getSongInSession().getName());
+        if(NabstaApplication.getSongInSession() != null) {
+            MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
+            currentSongMenuItem.setTitle(NabstaApplication.getSongInSession().getName());
+        }
         return true;
     }
 
@@ -95,8 +98,8 @@ public class MainActivity extends ActionBarActivity implements
             LoadSongTask loadSongTask = new LoadSongTask();
             loadSongTask.execute(songId);
             try {
-                NabstaApplication.setSongInSession(loadSongTask.get());
-                openSong(NabstaApplication.getSongInSession());
+                Song currentSOng = loadSongTask.get();
+                openSong(currentSOng);
             } catch (InterruptedException | ExecutionException e) {
                 Log.e(NabstaApplication.LOG_TAG, "Error loading song", e);
             }
@@ -149,12 +152,14 @@ public class MainActivity extends ActionBarActivity implements
                 song.getName()));
         NabstaApplication.setSongInSession(song);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID,song.getId());
+        editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, song.getId());
         editor.commit();
-        //MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
-        //currentSongMenuItem.setTitle(NabstaApplication.getSongInSession().getName());
-
-        Fragment fragment = Studio.newInstance(NabstaApplication.getSongInSession().getName(), song.getId());
+        if(nabstaMenu != null) {
+            MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
+            currentSongMenuItem.setTitle(NabstaApplication.getSongInSession().getName());
+        }
+        Log.d(NabstaApplication.LOG_TAG,String.format("Opening Studio with song id %d",song.getId()));
+        Fragment fragment = Studio.newInstance(song.getName(), song.getId());
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()

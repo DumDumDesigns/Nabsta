@@ -8,7 +8,6 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 
-import com.spazomatic.nabsta.MainActivity;
 import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.db.Song;
@@ -52,7 +51,7 @@ public class CurrentSongActionProvider extends ActionProvider {
         addTrackMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                MainActivity activity = (MainActivity)((ContextThemeWrapper)context).getBaseContext();
+
                 final Song song = NabstaApplication.getSongInSession();
                 AddTrackTask addTrackTask = new AddTrackTask();
                 addTrackTask.execute(song.getId());

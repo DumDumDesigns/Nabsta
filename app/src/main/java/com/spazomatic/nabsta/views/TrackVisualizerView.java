@@ -37,6 +37,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     public TrackVisualizerView(Context context, AttributeSet attrs) {
         super(context, attrs);
+
         getHolder().addCallback(this);
     }
     public Canvas getBitmapCanvas() {
@@ -53,21 +54,30 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.d(NabstaApplication.LOG_TAG, "Track VisuaLIZER SURFACE Created");
+        Log.d(NabstaApplication.LOG_TAG, String.format("Surface created trackview null = %b", trackView == null));
         trackView = new TrackView(this);
         Canvas canvas = getHolder().lockCanvas();
         if(canvas != null){
             canvas.drawColor(Color.DKGRAY);
+            loadBitMap(canvas);
             getHolder().unlockCanvasAndPost(canvas);
         }
-        loadBitMap();
+
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.d(NabstaApplication.LOG_TAG, "Track VisuaLIZER SURFACE CHANged");
-        Log.d(NabstaApplication.LOG_TAG, String.format("Track null = %b", trackView == null));
-        loadBitMap();
+        Log.d(NabstaApplication.LOG_TAG, String.format("Surface CHANGED trackview null = %b", trackView == null));
+
+        //trackView = new TrackView(this);
+        /*Canvas canvas = getHolder().lockCanvas();
+        if(canvas != null){
+            canvas.drawColor(Color.DKGRAY);
+            loadBitMap(canvas);
+            getHolder().unlockCanvasAndPost(canvas);
+        }
+        */
+
     }
 
     @Override
@@ -76,18 +86,23 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         Log.d(NabstaApplication.LOG_TAG, String.format("Track null = %b", trackView == null));
     }
 
-    public void updateVisualizer(byte[] waveform) {
+    private void updateVisualizer(byte[] waveform) {
 
         try {
-            if(trackView == null){
-                trackView = new TrackView(this);
+            if(trackView != null) {
+                trackView.draw(waveform);
+            }else{
+                Log.e(LOG_TAG,"WHYYYYYYYY THE FUCKKKKKKKKKK IS THE FUCKING TRACKVIEW FUCKING NULL FUCK");
             }
-            trackView.draw(waveform);
         }catch(Exception e){
             Log.e(LOG_TAG,"Error drawing trackView",e);
         }
     }
     private void reset(){
+        Log.d(LOG_TAG,String.format("calling RESET track view null = %b",trackView == null));
+        if(trackView == null){
+            trackView = new TrackView(this);
+        }
         if(trackView != null) {
             trackView.clearVisualizer();
         }
@@ -98,9 +113,10 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
         int w = MeasureSpec.getSize(widthMeasureSpec);
         int h = MeasureSpec.getSize(heightMeasureSpec);
-
+        //Log.d(LOG_TAG,String.format("ONMEASURE w: %d: h: %d",w,h));
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         bitmapCanvas = new Canvas();
+        bitmapCanvas.drawColor(Color.DKGRAY);
         bitmapCanvas.setBitmap(canvasBitmap);
 
         identityMatrix = new Matrix();
@@ -108,16 +124,17 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         setMeasuredDimension(w, h);
     }
 
-    private void loadBitMap(){
+    private void loadBitMap(Canvas canvas){
         Bitmap trackImage = BitmapFactory.decodeFile(track.getBitmap_file_name());
         if(trackImage != null && isDisplayWaveFormRealTime){
             Log.d(LOG_TAG,"DISPLAY TRACK IMAGE BITMAP");
-            Canvas canvas = getHolder().lockCanvas();
+
             if(canvas != null){
-                Log.d(LOG_TAG,String.format(
+                Log.d(LOG_TAG, String.format(
                         "Display ime %d wide %d", trackImage.getWidth(), trackImage.getHeight()));
-                canvas.drawBitmap(trackImage,0,0,null);
-                getHolder().unlockCanvasAndPost(canvas);
+
+                canvas.drawBitmap(trackImage, 0, 0, null);
+
             }
         }
     }
@@ -130,13 +147,11 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     public void trackBegin(int audioSessionId) {
-        Log.d(NabstaApplication.LOG_TAG,"Setting up the feckin visualizer");
+        Log.d(NabstaApplication.LOG_TAG, "Setting up the feckin visualizer");
         reset();
-        if(audioSessionId == 0){
-            return;
-        }
+
         trackVisualizer = new Visualizer(audioSessionId);
-        trackVisualizer.setEnabled(false);
+        //trackVisualizer.setEnabled(false);
         trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
         Log.d(NabstaApplication.LOG_TAG, String.format(
                 "CaptureSize: %d", trackVisualizer.getCaptureSize()));

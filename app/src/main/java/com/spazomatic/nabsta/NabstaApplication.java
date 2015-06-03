@@ -1,8 +1,6 @@
 package com.spazomatic.nabsta;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
@@ -12,11 +10,8 @@ import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.dao.DaoMaster;
 import com.spazomatic.nabsta.db.dao.DaoSession;
 import com.spazomatic.nabsta.tasks.CreateSongTask;
-import com.spazomatic.nabsta.tasks.LoadSongsTask;
 
 import java.io.File;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Created by samuelsegal on 4/20/15.
@@ -60,6 +55,7 @@ public class NabstaApplication extends Application{
         }
 
         setupDataBase();
+        /*
         LoadSongsTask loadSongsTask = new LoadSongsTask();
         loadSongsTask.execute();
         List<Song> songs = null;
@@ -67,17 +63,27 @@ public class NabstaApplication extends Application{
             songs = loadSongsTask.get();
             if(songs == null | songs.isEmpty()){
                 Song exampleSong = createSong("Example Project","Example Artist");
-                setSongInSession(exampleSong);
-                SharedPreferences sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
-                        Context.MODE_PRIVATE);
+                NabstaApplication.setSongInSession(exampleSong);
+                SharedPreferences sharedPreferences =
+                        getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
+                                Context.MODE_PRIVATE);
                 final SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID,exampleSong.getId());
                 editor.commit();
 
             }
         } catch (InterruptedException | ExecutionException e) {
-            Log.e(LOG_TAG,"Error loading songs",e);
+            Log.e(NabstaApplication.LOG_TAG,"Error loading songs",e);
         }
+        */
+
+    }
+
+    private void setupDataBase() {
+        DataBaseOpenHelper helper = DataBaseOpenHelper.getInstance(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        DaoMaster daoMaster = new DaoMaster(db);
+        daoSession = daoMaster.newSession();
     }
     private Song createSong(String songNameValue, String artistNameValue) {
         try {
@@ -91,13 +97,6 @@ public class NabstaApplication extends Application{
         }
         return null;
     }
-    private void setupDataBase() {
-        DataBaseOpenHelper helper = DataBaseOpenHelper.getInstance(this);
-        SQLiteDatabase db = helper.getWritableDatabase();
-        DaoMaster daoMaster = new DaoMaster(db);
-        daoSession = daoMaster.newSession();
-    }
-
     public DaoSession getDaoSession() {
         if(daoSession == null){
             setupDataBase();

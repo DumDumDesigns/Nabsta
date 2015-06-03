@@ -1,6 +1,7 @@
 package com.spazomatic.nabsta.views;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -43,6 +44,7 @@ public class TrackView {
     }
 
     public void clearVisualizer() {
+        Log.d(LOG_TAG,"------Clearing Visualizer-----");
         Canvas canvas = surfaceHolder.lockCanvas();
         if (canvas != null) {
             measure.clearVisualizer(surfaceView, canvas);

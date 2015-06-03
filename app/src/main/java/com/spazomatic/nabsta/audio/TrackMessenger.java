@@ -151,8 +151,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                 AudioFormat.CHANNEL_OUT_MONO,
                 AudioFormat.ENCODING_PCM_16BIT,
                 MIN_BUFF_SIZE,
-                AudioTrack.MODE_STREAM,
-                audioRecord.getAudioSessionId());
+                AudioTrack.MODE_STREAM);
 
         try {
             byte[] buffer = new byte[MIN_BUFF_SIZE];
@@ -348,7 +347,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
             audioRecord = null;
         }
         if(audioTrack != null) {
-
             //audioTrack.stop();
             audioTrack.release();
             audioTrack = null;
@@ -363,7 +361,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
             //audioRecord.stop();
             audioRecord.release();
             audioRecord = null;
-       }
+        }
         if(audioTrack != null) {
             //audioTrack.stop();
             audioTrack.release();
