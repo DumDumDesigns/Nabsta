@@ -7,6 +7,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.audiofx.Visualizer;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -18,6 +21,7 @@ import com.spazomatic.nabsta.db.Track;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 /**
  * Created by samuelsegal on 5/16/15.
@@ -34,11 +38,14 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     private Matrix identityMatrix;
     private Track track;
     private boolean isDisplayWaveFormRealTime;
-
+    private UIHandler uiHandler;
+    private Object lock = new Object();
     public TrackVisualizerView(Context context, AttributeSet attrs) {
         super(context, attrs);
-
         getHolder().addCallback(this);
+        uiHandler = new UIHandler(Looper.getMainLooper(),this);
+        NabstaApplication.getInstance().getBaseContext();
+
     }
     public Canvas getBitmapCanvas() {
         return bitmapCanvas;
@@ -55,13 +62,29 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.d(NabstaApplication.LOG_TAG, String.format("Surface created trackview null = %b", trackView == null));
-        trackView = new TrackView(this);
-        Canvas canvas = getHolder().lockCanvas();
-        if(canvas != null){
+
+    try {
+        trackView = new TrackView(holder);
+        Log.d(NabstaApplication.LOG_TAG, String.format("TrackView Createdd trackview null = %b", trackView == null));
+        Log.d(NabstaApplication.LOG_TAG, String.format("bimapCanvas null = %b", bitmapCanvas == null));
+        trackView.setBitmapCanvas(bitmapCanvas);
+        Log.d(NabstaApplication.LOG_TAG, String.format("canvasBitmap null = %b", canvasBitmap == null));
+        trackView.setCanvasBitmap(canvasBitmap);
+        Log.d(NabstaApplication.LOG_TAG, String.format("identityMatrix null = %b", identityMatrix == null));
+        trackView.setIdentityMatrix(identityMatrix);
+        Log.d(LOG_TAG,String.format("THE FECKING TRACK FECKING VIEW IS CREATED WTFEEEEE? IS IT FECKING SHOWN????? %b",isShown()));
+
+
+        Canvas canvas = holder.lockCanvas();
+        if (canvas != null) {
             canvas.drawColor(Color.DKGRAY);
             loadBitMap(canvas);
-            getHolder().unlockCanvasAndPost(canvas);
+            holder.unlockCanvasAndPost(canvas);
         }
+
+    }catch(Exception e){
+        Log.e(LOG_TAG,"HMMMMMMMMMMMMM HU");
+    }
 
     }
 
@@ -69,21 +92,11 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.d(NabstaApplication.LOG_TAG, String.format("Surface CHANGED trackview null = %b", trackView == null));
 
-        //trackView = new TrackView(this);
-        /*Canvas canvas = getHolder().lockCanvas();
-        if(canvas != null){
-            canvas.drawColor(Color.DKGRAY);
-            loadBitMap(canvas);
-            getHolder().unlockCanvasAndPost(canvas);
-        }
-        */
-
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.d(NabstaApplication.LOG_TAG, "Track VisuaLIZER SURFACE Destroyed");
-        Log.d(NabstaApplication.LOG_TAG, String.format("Track null = %b", trackView == null));
+        Log.d(NabstaApplication.LOG_TAG, String.format("Surface DEstroyed trackview null = %b", trackView == null));
     }
 
     private void updateVisualizer(byte[] waveform) {
@@ -92,19 +105,36 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
             if(trackView != null) {
                 trackView.draw(waveform);
             }else{
-                Log.e(LOG_TAG,"WHYYYYYYYY THE FUCKKKKKKKKKK IS THE FUCKING TRACKVIEW FUCKING NULL FUCK");
+                Log.e(LOG_TAG,"PRANK CALL!!!!! PRANK CALL!!!!!");
             }
-        }catch(Exception e){
-            Log.e(LOG_TAG,"Error drawing trackView",e);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Error drawing trackView",e);
         }
     }
     private void reset(){
-        Log.d(LOG_TAG,String.format("calling RESET track view null = %b",trackView == null));
-        if(trackView == null){
-            trackView = new TrackView(this);
-        }
+
+        Log.d(LOG_TAG, String.format("calling RESET track view null = %b", trackView == null));
+        Log.d(LOG_TAG, String.format("Is view Activated %b", isActivated()));
+        Log.d(LOG_TAG,String.format("Is view shown %b",isShown()));
+        Log.d(LOG_TAG,String.format("Is view enabled %b",isEnabled()));
+        Log.d(LOG_TAG,String.format("Is view dirty %b",isDirty()));
+        Log.d(LOG_TAG,String.format("Is view focusable %b",isFocusable()));
+        Log.d(LOG_TAG,String.format("Is view isHapticFeedbackEnabled %b",isHapticFeedbackEnabled()));
+        Log.d(LOG_TAG,String.format("Is view isAccessibilityFocused %b",isAccessibilityFocused()));
+        Log.d(LOG_TAG,String.format("Is view drawingCacheEnabled %b", isDrawingCacheEnabled()));
+        Log.d(LOG_TAG,String.format("Is view isAttachedToWindow %b",isAttachedToWindow()));
+        Log.d(LOG_TAG,String.format("Is view isHardwareAccelerated %b",isHardwareAccelerated()));
+        Log.d(LOG_TAG,String.format("Is view isClickable %b",isClickable()));
+        Log.d(LOG_TAG,String.format("Is view isDuplicateParentStateEnabled %b",isDuplicateParentStateEnabled()));
+        Log.d(LOG_TAG,String.format("Is view isSaveEnabled %b",isSaveEnabled()));
+        Log.d(LOG_TAG,String.format("Is view isImportantForAccessibility %b",isImportantForAccessibility()));
+        Log.d(LOG_TAG,String.format("Is view isSelected %b",isSelected()));
+        Log.d(LOG_TAG,String.format("Is view isInEditMode %b",isInEditMode()));
         if(trackView != null) {
             trackView.clearVisualizer();
+        }else{
+            Log.e(LOG_TAG, "WHYYYYYYYY THE FUCKKKKKKKKKK IS THE FUCKING TRACKVIEW FUCKING NULL FUCK");
+
         }
     }
 
@@ -121,21 +151,26 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
         identityMatrix = new Matrix();
 
+
         setMeasuredDimension(w, h);
     }
 
     private void loadBitMap(Canvas canvas){
-        Bitmap trackImage = BitmapFactory.decodeFile(track.getBitmap_file_name());
-        if(trackImage != null && isDisplayWaveFormRealTime){
-            Log.d(LOG_TAG,"DISPLAY TRACK IMAGE BITMAP");
+        try {
+            Bitmap trackImage = BitmapFactory.decodeFile(track.getBitmap_file_name());
+            if (trackImage != null && isDisplayWaveFormRealTime) {
+                Log.d(LOG_TAG, "DISPLAY TRACK IMAGE BITMAP");
 
-            if(canvas != null){
-                Log.d(LOG_TAG, String.format(
-                        "Display ime %d wide %d", trackImage.getWidth(), trackImage.getHeight()));
+                if (canvas != null) {
+                    Log.d(LOG_TAG, String.format(
+                            "Display ime %d wide %d", trackImage.getWidth(), trackImage.getHeight()));
 
-                canvas.drawBitmap(trackImage, 0, 0, null);
+                    canvas.drawBitmap(trackImage, 0, 0, null);
 
+                }
             }
+        }catch(Exception e){
+            Log.e(LOG_TAG,String.format("Error with track bitmap: Error Message %s",e.getMessage()),e);
         }
     }
     @Override
@@ -149,7 +184,9 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     public void trackBegin(int audioSessionId) {
         Log.d(NabstaApplication.LOG_TAG, "Setting up the feckin visualizer");
         reset();
-
+        //Message trackCompleteMessage = uiHandler.obtainMessage(
+        //        RESET_VISUALIZER, this);
+        //trackCompleteMessage.sendToTarget();
         trackVisualizer = new Visualizer(audioSessionId);
         //trackVisualizer.setEnabled(false);
         trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
@@ -183,17 +220,18 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     private void updateVisualizer(double[] fft) {
         try {
-            if(trackView == null){
-                trackView = new TrackView(this);
-            }
             trackView.draw(fft);
         }catch(Exception e){
             Log.e(LOG_TAG,"Error drawing trackView",e);
         }
     }
-
+    byte[] wf;
     @Override
     public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+        //this.wf = waveform;
+        //Message trackCompleteMessage = uiHandler.obtainMessage(
+                //UPDATE_VISUALIZER, this);
+        //trackCompleteMessage.sendToTarget();
         updateVisualizer(waveform);
     }
 
@@ -212,5 +250,37 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
                     "Error Saving Bitmap %s ", e.getMessage()),e);
         }
     }
+    private static final int UPDATE_VISUALIZER = 6;
+    private static final int RESET_VISUALIZER = 7;
 
+    private static class UIHandler extends Handler {
+        private WeakReference<TrackVisualizerView> trackVisualizerViewWeakReference;
+
+        public UIHandler(Looper looper, TrackVisualizerView trackVisualizerView) {
+            super(looper);
+            this.trackVisualizerViewWeakReference = new WeakReference<>(trackVisualizerView);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+
+            TrackVisualizerView trackVisualizerView = trackVisualizerViewWeakReference.get();
+            switch(msg.what){
+                case UPDATE_VISUALIZER:{
+                    trackVisualizerView.updateVisualizer(trackVisualizerView.wf);
+                    break;
+                }
+                case RESET_VISUALIZER: {
+                    trackVisualizerView.reset();
+                    break;
+                }
+                default:{
+                    super.handleMessage(msg);
+                    break;
+                }
+            }
+
+
+        }
+    }
 }

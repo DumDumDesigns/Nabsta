@@ -1,9 +1,10 @@
 package com.spazomatic.nabsta.views;
 
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 
 /**
  * Created by samuelsegal on 5/16/15.
@@ -15,16 +16,16 @@ public class TrackView {
 
     //TODO: SAve track state in either shared preferences or database
     private SurfaceHolder surfaceHolder;
-    private SurfaceView surfaceView;
+
     private Measure measure;
 
 
-    public TrackView(TrackVisualizerView surfaceView) {
+    public TrackView(SurfaceHolder holder) {
 
-        this.surfaceHolder = surfaceView.getHolder();
-        this.surfaceView = surfaceView;
+        this.surfaceHolder = holder;
+
         measure = new Measure();
-        measure.init(surfaceView);
+        measure.init();
 
     }
 
@@ -47,9 +48,20 @@ public class TrackView {
         Log.d(LOG_TAG,"------Clearing Visualizer-----");
         Canvas canvas = surfaceHolder.lockCanvas();
         if (canvas != null) {
-            measure.clearVisualizer(surfaceView, canvas);
+            measure.clearVisualizer( canvas);
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
 
+    }
+    public void setBitmapCanvas(Canvas bitmapCanvas) {
+        measure.setBitmapCanvas( bitmapCanvas);
+    }
+
+    public void setCanvasBitmap(Bitmap canvasBitmap) {
+       measure.setCanvasBitmap(canvasBitmap);
+    }
+
+    public void setIdentityMatrix(Matrix identityMatrix) {
+        measure.setIdentityMatrix(identityMatrix);
     }
 }

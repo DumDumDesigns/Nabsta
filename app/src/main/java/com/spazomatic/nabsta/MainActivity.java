@@ -68,9 +68,10 @@ public class MainActivity extends ActionBarActivity implements
         Log.d(NabstaApplication.LOG_TAG,"MainActivity onCreateOptions");
         nabstaMenu = menu;
         getMenuInflater().inflate(R.menu.menu_main, nabstaMenu);
-        if(NabstaApplication.getSongInSession() != null) {
+        if(NabstaApplication.getInstance().getSongInSession() != null) {
             MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
-            currentSongMenuItem.setTitle(NabstaApplication.getSongInSession().getName());
+            currentSongMenuItem.setTitle(
+                    NabstaApplication.getInstance().getSongInSession().getName());
         }
         return true;
     }
@@ -82,7 +83,12 @@ public class MainActivity extends ActionBarActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(NabstaApplication.LOG_TAG, "onResume called...");
+        Log.d(NabstaApplication.LOG_TAG, "MainActivity onResume called...");
+        NabstaApplication.activityResumed();
+        //TODO Think of best solution for battery monitoring when has most all features developed.
+        Log.d(NabstaApplication.LOG_TAG, "Register Batter receiver dynamically...");
+        registerReceiver(batteryLevelReceiver, batteryChanged);
+
         sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
                 Context.MODE_PRIVATE);
         if(sharedPreferences.contains(NabstaApplication.NABSTA_KEEP_SCREEN_ON)){
@@ -105,16 +111,13 @@ public class MainActivity extends ActionBarActivity implements
             }
         }
 
-        NabstaApplication.activityResumed();
-        //TODO Think of best solution for battery monitoring when has most all features developed.
-        Log.d(NabstaApplication.LOG_TAG, "Register Batter receiver dynamically...");
-        registerReceiver(batteryLevelReceiver, batteryChanged);
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Log.d(NabstaApplication.LOG_TAG, "onPause called...");
+        Log.d(NabstaApplication.LOG_TAG, "MainActivity onPause called...");
         NabstaApplication.activityPaused();
         Log.d(NabstaApplication.LOG_TAG, "UnRegister Batter receiver dynamically...");
         unregisterReceiver(batteryLevelReceiver);
@@ -123,13 +126,13 @@ public class MainActivity extends ActionBarActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        Log.d(NabstaApplication.LOG_TAG, "onStop called...");
+        Log.d(NabstaApplication.LOG_TAG, "MainActivity onStop called...");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(NabstaApplication.LOG_TAG, "onDestroy called...");
+        Log.d(NabstaApplication.LOG_TAG, "MainActivity onDestroy called...");
     }
 
     @Override
@@ -150,13 +153,13 @@ public class MainActivity extends ActionBarActivity implements
         Log.d(NabstaApplication.LOG_TAG, String.format(
                 "----------Opening Project %s------------",
                 song.getName()));
-        NabstaApplication.setSongInSession(song);
+        NabstaApplication.getInstance().setSongInSession(song);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, song.getId());
         editor.commit();
         if(nabstaMenu != null) {
             MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
-            currentSongMenuItem.setTitle(NabstaApplication.getSongInSession().getName());
+            currentSongMenuItem.setTitle(NabstaApplication.getInstance().getSongInSession().getName());
         }
         Log.d(NabstaApplication.LOG_TAG,String.format("Opening Studio with song id %d",song.getId()));
         Fragment fragment = Studio.newInstance(song.getName(), song.getId());

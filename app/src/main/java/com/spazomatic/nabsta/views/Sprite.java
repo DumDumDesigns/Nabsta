@@ -7,7 +7,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
-import android.view.SurfaceView;
 
 import com.spazomatic.nabsta.NabstaApplication;
 
@@ -23,7 +22,7 @@ public class Sprite {
     private Rect mRect = new Rect();
     private Paint mForePaint = new Paint();
     private Canvas bitmapCanvas;
-    private Bitmap bitmap;
+    private Bitmap canvasBitmap;
     private Matrix identityMatrix;
 
     public Sprite(){
@@ -33,12 +32,31 @@ public class Sprite {
         mForePaint.setColor(Color.BLUE);
     }
 
-    public void init(TrackVisualizerView surfaceView){
+    public void setBitmapCanvas(Canvas bitmapCanvas) {
+        this.bitmapCanvas = bitmapCanvas;
+    }
 
-        bounds = new Rect(0,0,1, surfaceView.getHeight());
-        bitmap = surfaceView.getCanvasBitmap();
-        bitmapCanvas = surfaceView.getBitmapCanvas();
-        identityMatrix = surfaceView.getIdentityMatrix();
+    public void setCanvasBitmap(Bitmap canvasBitmap) {
+        this.canvasBitmap = canvasBitmap;
+    }
+
+    public void setIdentityMatrix(Matrix identityMatrix) {
+        this.identityMatrix = identityMatrix;
+    }
+
+    public void init(){
+
+        bounds = new Rect(0,0,1, 150);
+        //canvasBitmap = Bitmap.createBitmap(1490, 150, Bitmap.Config.ARGB_8888);
+       // bitmapCanvas = new Canvas();
+        //bitmapCanvas.drawColor(Color.DKGRAY);
+       // bitmapCanvas.setCanvasBitmap(canvasBitmap);
+
+        //identityMatrix = new Matrix();
+
+        //canvasBitmap = surfaceView.getCanvasBitmap();
+        //bitmapCanvas = surfaceView.getBitmapCanvas();
+        //identityMatrix = surfaceView.getIdentityMatrix();
     }
     public void updateVisualizer(byte[] bytes, Canvas canvas) {
         mBytes = bytes;
@@ -74,7 +92,7 @@ public class Sprite {
         bounds = new Rect(mRect.left+1,mRect.top,mRect.left+2,mRect.bottom);
         bitmapCanvas.drawLines(mPoints, mForePaint);
 
-        canvas.drawBitmap(bitmap,identityMatrix,null);
+        canvas.drawBitmap(canvasBitmap,identityMatrix,null);
     }
 
     private void draw(Canvas canvas){
@@ -102,11 +120,11 @@ public class Sprite {
         bounds = new Rect(mRect.left+1,mRect.top,mRect.left+2,mRect.bottom);
         bitmapCanvas.drawLines(mPoints, mForePaint);
         //canvas.drawLines(mPoints, mForePaint);
-        canvas.drawBitmap(bitmap,identityMatrix,null);
+        canvas.drawBitmap(canvasBitmap,identityMatrix,null);
     }
-    public void clearVisualizer(SurfaceView surfaceView, Canvas canvas){
+    public void clearVisualizer( Canvas canvas){
         Log.d(NabstaApplication.LOG_TAG,"Sprint clear visualizer called");
-        bounds = new Rect(0,0,1, surfaceView.getHeight());
+        bounds = new Rect(0,0,1, canvas.getHeight());
         canvas.drawColor(Color.CYAN);
     }
 

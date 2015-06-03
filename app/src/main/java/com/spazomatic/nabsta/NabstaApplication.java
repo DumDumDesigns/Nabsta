@@ -1,6 +1,8 @@
 package com.spazomatic.nabsta;
 
 import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
@@ -10,8 +12,11 @@ import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.dao.DaoMaster;
 import com.spazomatic.nabsta.db.dao.DaoSession;
 import com.spazomatic.nabsta.tasks.CreateSongTask;
+import com.spazomatic.nabsta.tasks.LoadSongsTask;
 
 import java.io.File;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by samuelsegal on 4/20/15.
@@ -27,7 +32,7 @@ public class NabstaApplication extends Application{
 
     private static NabstaApplication nabstaApplicationInstance;
     private static boolean activityVisible;
-    private static Song songInSession;
+    private Song songInSession;
 
     private DaoSession daoSession;
     public static NabstaApplication getInstance(){
@@ -37,6 +42,16 @@ public class NabstaApplication extends Application{
     public void onCreate() {
         nabstaApplicationInstance = this;
         Log.d(LOG_TAG, "Nabsta starting...");
+        createRootDirectory();
+
+        setupDataBase();
+
+        loadExampleSong();
+
+
+    }
+
+    private void createRootDirectory() {
         if(Environment.getExternalStorageDirectory().exists() &&
                 Environment.getExternalStorageDirectory().canWrite()) {
             NABSTA_ROOT_DIR = new File(Environment.getExternalStorageDirectory(), "Nabsta");
@@ -53,30 +68,30 @@ public class NabstaApplication extends Application{
             Log.d(LOG_TAG, String.format("Creating root dir: %s",NABSTA_ROOT_DIR.getName()));
             NABSTA_ROOT_DIR.mkdirs();
         }
+    }
 
-        setupDataBase();
-        /*
+    private void loadExampleSong() {
         LoadSongsTask loadSongsTask = new LoadSongsTask();
         loadSongsTask.execute();
         List<Song> songs = null;
         try {
             songs = loadSongsTask.get();
-            if(songs == null | songs.isEmpty()){
+            if(songs == null || songs.isEmpty()){
                 Song exampleSong = createSong("Example Project","Example Artist");
-                NabstaApplication.setSongInSession(exampleSong);
-                SharedPreferences sharedPreferences =
-                        getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
-                                Context.MODE_PRIVATE);
-                final SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID,exampleSong.getId());
-                editor.commit();
+                if(exampleSong != null) {
+                    this.setSongInSession(exampleSong);
+                    SharedPreferences sharedPreferences =
+                            getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
+                                    Context.MODE_PRIVATE);
+                    final SharedPreferences.Editor editor = sharedPreferences.edit();
 
+                    editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, exampleSong.getId());
+                    editor.commit();
+                }
             }
         } catch (InterruptedException | ExecutionException e) {
             Log.e(NabstaApplication.LOG_TAG,"Error loading songs",e);
         }
-        */
-
     }
 
     private void setupDataBase() {
@@ -105,12 +120,12 @@ public class NabstaApplication extends Application{
         return daoSession;
     }
 
-    public static Song getSongInSession() {
+    public  Song getSongInSession() {
         return songInSession;
     }
 
-    public static void setSongInSession(Song songInSession) {
-        NabstaApplication.songInSession = songInSession;
+    public  void setSongInSession(Song songInSession) {
+        this.songInSession = songInSession;
     }
 
     public static boolean isActivityVisible() {

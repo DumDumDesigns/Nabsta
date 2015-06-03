@@ -91,8 +91,8 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                     AudioFormat.ENCODING_PCM_16BIT,
                     MIN_BUFF_SIZE,
                     AudioTrack.MODE_STREAM);
-            audioTrack.play();
             callListenersTrackBegin(audioTrack.getAudioSessionId(), false);
+            audioTrack.play();
             int numberOfBytesWritten = audioTrack.write(trackBytes, 0, trackBytes.length);
             if (numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
                     numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
@@ -130,35 +130,38 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                     file.getAbsolutePath()));
         }
 */
+
         Log.d(LOG_TAG,String.format("----------RECORD TRACk %s-------------", track.getName()));
         OutputStream os = new FileOutputStream(file);
         BufferedOutputStream bos = new BufferedOutputStream(os);
         DataOutputStream dos = new DataOutputStream(bos);
-
-        Log.d(NabstaApplication.LOG_TAG,String.format(
-                "Begin Recording File: %s",
-                file.getAbsolutePath()));
-
-         audioRecord = new AudioRecord(
-                MediaRecorder.AudioSource.MIC,
-                FREQUENCY,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                MIN_BUFF_SIZE);
-         audioTrack = new AudioTrack(
-                AudioManager.STREAM_MUSIC,
-                FREQUENCY,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                MIN_BUFF_SIZE,
-                AudioTrack.MODE_STREAM);
-
         try {
+            Log.d(NabstaApplication.LOG_TAG,String.format(
+                    "Begin Recording File: %s",
+                    file.getAbsolutePath()));
+
+             audioRecord = new AudioRecord(
+                     MediaRecorder.AudioSource.MIC,
+                     FREQUENCY,
+                     AudioFormat.CHANNEL_IN_MONO,
+                     AudioFormat.ENCODING_PCM_16BIT,
+                     MIN_BUFF_SIZE);
+             audioTrack = new AudioTrack(
+                     AudioManager.STREAM_MUSIC,
+                     FREQUENCY,
+                     AudioFormat.CHANNEL_OUT_MONO,
+                     AudioFormat.ENCODING_PCM_16BIT,
+                     MIN_BUFF_SIZE,
+                     AudioTrack.MODE_STREAM,
+                     audioRecord.getAudioSessionId());
+
+            callListenersTrackBegin(audioTrack.getAudioSessionId(), true);
             byte[] buffer = new byte[MIN_BUFF_SIZE];
+            Log.d(LOG_TAG, String.format("--------------RECORD STATE: %s ---------------", audioRecord.getState()));
 
             audioRecord.startRecording();
             audioTrack.play();
-            callListenersTrackBegin(audioTrack.getAudioSessionId(), true);
+
             while (isRecording) {
                 int bufferReadResult = audioRecord.read(buffer, 0, MIN_BUFF_SIZE);
                 for (int i = 0; i < bufferReadResult; i++) {
@@ -170,7 +173,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
 
             Log.d(NabstaApplication.LOG_TAG, String.format(
                     "Finish Recording File %s", file.getAbsolutePath()));
-        } catch (IOException e) {
+        } catch (Exception e) {
             Log.e(NabstaApplication.LOG_TAG, String.format(
                     "Error Recording File %s",file.getAbsolutePath()), e);
         }finally{
@@ -402,4 +405,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
     public void setTrackCompleteListener(TrackCompleteListener trackCompleteListener) {
         this.trackCompleteListener = trackCompleteListener;
     }
+
+
+
 }

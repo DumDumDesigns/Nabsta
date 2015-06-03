@@ -47,6 +47,7 @@ public class CreateSongTask extends AsyncTask<String,Void,Song> {
         daoSession.getTrackDao().update(defaultTrack);
         daoSession.refresh(song);
         daoSession.refresh(defaultTrack);
+        daoSession.clear();
         Log.d(NabstaApplication.LOG_TAG,String.format(
                 "Song %s created with track %s", song.getName(),song.getTrack()));
         return song;
@@ -64,6 +65,12 @@ public class CreateSongTask extends AsyncTask<String,Void,Song> {
             String trackImageFileName = String.format(
                     "%s%s%s%s",dir.getAbsolutePath(),"/trackView_",defaultTrack.getId(),".jpg");
             defaultTrack.setBitmap_file_name(trackImageFileName);
+
+            File trackImageFile = new File(trackImageFileName);
+            trackImageFile.createNewFile();
+            trackImageFile.setReadable(true);
+            trackImageFile.setWritable(true);
+            trackImageFile.setExecutable(true);
 
             File trackFile = new File(dir, String.format("%s_%d.PCM",
                     defaultTrack.getName(),defaultTrack.getId()));

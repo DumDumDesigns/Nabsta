@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.spazomatic.nabsta.NabstaApplication;
@@ -44,7 +43,7 @@ public class Studio extends Fragment {
 
     private String songName;
     private Long songId;
-    private View studioView;
+
     private OnFragmentInteractionListener mListener;
 
     /**
@@ -82,7 +81,51 @@ public class Studio extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        studioView = inflater.inflate(R.layout.fragment_studio, container, false);
+        View  studioView = inflater.inflate(R.layout.fragment_studio, container, false);
+        Long songId = getArguments().getLong(SongsActionProvider.SONG_ID);
+        Log.d(NabstaApplication.LOG_TAG,String.format("Search with songId %d", songId));
+        LoadSongTask loadSongTask = new LoadSongTask();
+        loadSongTask.execute(songId);
+        try {
+            final Song song = loadSongTask.get();
+            if(song != null) {
+                Log.d(NabstaApplication.LOG_TAG,String.format(
+                        "Loading Song %s with %d tracks", song.getName(),
+                        song.getTracks().size()));
+
+                final List<Track> trackList = song.getTracks();
+                final ListView trackListView =
+                        (ListView) studioView.findViewById(R.id.list_view_tracks);
+                final List<TrackMessenger> trackMessengerList = new ArrayList<>();
+                for(Track track: trackList){
+                    TrackMessenger trackMessenger = new TrackMessenger(track);
+                    trackMessenger.setTrackID(track.getId());
+                    trackMessengerList.add(trackMessenger);
+                }
+                final TrackListAdapter songAdapter = new TrackListAdapter(getActivity(),
+                        android.R.layout.simple_list_item_1, trackMessengerList);
+
+                trackListView.setAdapter(songAdapter);
+                trackListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            int position, long id) {
+                        Track track = (Track) trackListView.getItemAtPosition(position);
+                        Log.d(NabstaApplication.LOG_TAG, String.format(
+                                "Song %s clicked", track.getName()));
+                    }
+
+                });
+
+                SongPlayButton songPlayButton =
+                        (SongPlayButton) studioView.findViewById(R.id.songPlayBtn);
+                songPlayButton.setTrackMessengerList(trackMessengerList);
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(NabstaApplication.LOG_TAG,String.format(
+                    "Error creating TrackAdapter with error message %s", e.getMessage()),e);
+        }
         return studioView;
     }
 
@@ -127,50 +170,7 @@ public class Studio extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        Long songId = getArguments().getLong(SongsActionProvider.SONG_ID);
-        Log.d(NabstaApplication.LOG_TAG,String.format("Search with songId %d", songId));
-        LoadSongTask loadSongTask = new LoadSongTask();
-        loadSongTask.execute(songId);
-        try {
-            final Song song = loadSongTask.get();
-            if(song != null) {
-                Log.d(NabstaApplication.LOG_TAG,String.format(
-                        "Loading Song %s with %d tracks", song.getName(),
-                        song.getTracks().size()));
 
-                final List<Track> trackList = song.getTracks();
-                final ListView trackListView =
-                        (ListView) studioView.findViewById(R.id.list_view_tracks);
-                final List<TrackMessenger> trackMessengerList = new ArrayList<>();
-                for(Track track: trackList){
-                    TrackMessenger trackMessenger = new TrackMessenger(track);
-                    trackMessenger.setTrackID(track.getId());
-                    trackMessengerList.add(trackMessenger);
-                }
-                TrackListAdapter songAdapter = new TrackListAdapter(getActivity(),
-                        android.R.layout.simple_list_item_1, trackMessengerList);
-
-                trackListView.setAdapter(songAdapter);
-                trackListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view,
-                                            int position, long id) {
-                        Track track = (Track) trackListView.getItemAtPosition(position);
-                        Log.d(NabstaApplication.LOG_TAG, String.format(
-                                "Song %s clicked", track.getName()));
-                    }
-
-                });
-
-                SongPlayButton songPlayButton =
-                        (SongPlayButton) studioView.findViewById(R.id.songPlayBtn);
-                songPlayButton.setTrackMessengerList(trackMessengerList);
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            Log.e(NabstaApplication.LOG_TAG,String.format(
-                    "Error creating TrackAdapter with error message %s", e.getMessage()),e);
-        }
 
     }
 
@@ -182,41 +182,36 @@ public class Studio extends Fragment {
 
         public TrackListAdapter(Context context, int textViewResourceId, List<TrackMessenger> objects) {
             super(context, textViewResourceId, objects);
+            Log.d(NabstaApplication.LOG_TAG, "Construction of the fecking fecked track feckin adapter........");
             this.context = context;
             this.trackMessengers = objects;
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            if(convertView == null) {
+                Log.d(NabstaApplication.LOG_TAG, String.format("Calling getView TrackListAdapter position %d", position));
+                LayoutInflater inflater = (LayoutInflater) context
+                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                convertView = inflater.inflate(R.layout.list_view_track, parent, false);
 
-            Log.d(NabstaApplication.LOG_TAG,"Calling getView TrackListAdapter");
-            LayoutInflater inflater = (LayoutInflater) context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            final View rowView = inflater.inflate(R.layout.list_view_track, parent, false);
+                final TrackMuteButton trackMuteButton =
+                        (TrackMuteButton)convertView.findViewById(R.id.track_mute_btn);
+                trackMuteButton.setOnMuteTrackListener(trackMessengers.get(position));
 
-            final LinearLayout trackLayout = (LinearLayout)rowView.findViewById(R.id.track_layout);
-            final TrackMuteButton trackMuteButton =
-                    (TrackMuteButton)rowView.findViewById(R.id.track_mute_btn);
-            trackMuteButton.setOnMuteTrackListener(trackMessengers.get(position));
+                final TrackRecordButton recordButton = (TrackRecordButton)convertView.findViewById(R.id.recordBtn);
+                recordButton.setOnRecordTrackListener(trackMessengers.get(position));
 
-            final TrackRecordButton recordButton = (TrackRecordButton)rowView.findViewById(R.id.recordBtn);
-            recordButton.setOnRecordTrackListener(trackMessengers.get(position));
+                final TrackVisualizerView trackVisualizerView =
+                        (TrackVisualizerView) convertView.findViewById(R.id.trackVisualizer);
 
-            final TrackVisualizerView trackVisualizerView =
-                    (TrackVisualizerView) rowView.findViewById(R.id.trackVisualizer);
-            trackMessengers.get(position).setTrackStatusListener(trackVisualizerView);
+                Log.d(NabstaApplication.LOG_TAG, String.format("TrackVisualizerView shown = %b", trackVisualizerView.isShown()));
 
-            return rowView;
-        }
+                trackMessengers.get(position).setTrackStatusListener(trackVisualizerView);
+            }
 
-        @Override
-        public long getItemId(int position) {
-            return trackMessengers.get(position).getTrackID();
-        }
 
-        @Override
-        public boolean hasStableIds() {
-            return true;
+            return convertView;
         }
 
 

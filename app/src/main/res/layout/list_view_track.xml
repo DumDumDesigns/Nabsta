@@ -1,20 +1,9 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent"
-    android:orientation="vertical">
-<Space
-    android:layout_height="1dp"
-    android:layout_width="match_parent"
-    android:background="@color/bright_foreground_disabled_material_dark"
-     />
-<com.spazomatic.nabsta.views.controls.TrackLayout
     android:id="@+id/track_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
-    android:orientation="horizontal"
-    android:background="@color/background_floating_material_dark">
+    android:orientation="horizontal">
     <com.spazomatic.nabsta.views.controls.TrackMuteButton
         android:id="@+id/track_mute_btn"
         android:layout_width="50dp"
@@ -27,8 +16,6 @@
         android:background="@drawable/track_record_btn" />
     <com.spazomatic.nabsta.views.TrackVisualizerView
         android:id="@+id/trackVisualizer"
-        android:layout_width="fill_parent"
-        android:layout_height="50dp"
-        />
-</com.spazomatic.nabsta.views.controls.TrackLayout>
+        android:layout_width="1400dp"
+        android:layout_height="50dp"/>
 </LinearLayout>

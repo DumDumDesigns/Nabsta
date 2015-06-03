@@ -88,14 +88,18 @@ public class ManageProjectsDialog extends DialogFragment{
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = (LayoutInflater) context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View rowView = inflater.inflate(R.layout.list_view_songs, parent, false);
-            TextView textView = (TextView) rowView.findViewById(R.id.project_name);
-            ImageView imageView = (ImageView) rowView.findViewById(R.id.delete_project_btn);
-            textView.setText(songs.get(position).getName());
-            imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.delete_button_24_red));
-            return rowView;
+
+            if(convertView == null) {
+                LayoutInflater inflater = (LayoutInflater) context
+                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                convertView = inflater.inflate(R.layout.list_view_songs, parent, false);
+
+                TextView textView = (TextView) convertView.findViewById(R.id.project_name);
+                ImageView imageView = (ImageView) convertView.findViewById(R.id.delete_project_btn);
+                textView.setText(songs.get(position).getName());
+                imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.delete_button_24_red));
+            }
+            return convertView;
         }
 
         @Override

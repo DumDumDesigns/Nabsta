@@ -52,7 +52,7 @@ public class CurrentSongActionProvider extends ActionProvider {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-                final Song song = NabstaApplication.getSongInSession();
+                final Song song = NabstaApplication.getInstance().getSongInSession();
                 AddTrackTask addTrackTask = new AddTrackTask();
                 addTrackTask.execute(song.getId());
                 resetStudioFragment.onAddTrack(song);

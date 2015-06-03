@@ -24,6 +24,7 @@ public class SongPlayButton extends Button implements View.OnClickListener,
     private UIHandler uiHandler;
     private List<TrackMessenger> trackMessengerList;
     private final static int TRACKS_ALL_COMPLETE_STATE = 3;
+    private final static int PLAY_ALL_TRACKS = 4;
     @Override
     public void onTrackFinished(int trackCount) {
         Log.d(NabstaApplication.LOG_TAG,String.format("TRACK #%d FINISHED",trackCount));
@@ -53,7 +54,13 @@ public class SongPlayButton extends Button implements View.OnClickListener,
 
     @Override
     public void onClick(View v) {
+        //Message trackCompleteMessage = uiHandler.obtainMessage(
+        //        PLAY_ALL_TRACKS, this);
+        //trackCompleteMessage.sendToTarget();
+        playTracks();
 
+    }
+    private void playTracks() {
         if(!isSelected()){
             if(trackMessengerList != null) {
                 Log.d(NabstaApplication.LOG_TAG, String.format(
@@ -94,7 +101,9 @@ public class SongPlayButton extends Button implements View.OnClickListener,
                     songPlayButton.setSelected(false);
                     break;
                 }
-
+                case PLAY_ALL_TRACKS:{
+                    songPlayButton.playTracks();
+                }
                 default:{
                     super.handleMessage(msg);
                     break;
