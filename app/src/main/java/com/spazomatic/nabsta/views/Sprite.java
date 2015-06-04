@@ -6,9 +6,6 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
-
-import com.spazomatic.nabsta.NabstaApplication;
 
 /**
  * Created by samuelsegal on 5/7/15.
@@ -45,18 +42,7 @@ public class Sprite {
     }
 
     public void init(){
-
         bounds = new Rect(0,0,1, 150);
-        //canvasBitmap = Bitmap.createBitmap(1490, 150, Bitmap.Config.ARGB_8888);
-       // bitmapCanvas = new Canvas();
-        //bitmapCanvas.drawColor(Color.DKGRAY);
-       // bitmapCanvas.setCanvasBitmap(canvasBitmap);
-
-        //identityMatrix = new Matrix();
-
-        //canvasBitmap = surfaceView.getCanvasBitmap();
-        //bitmapCanvas = surfaceView.getBitmapCanvas();
-        //identityMatrix = surfaceView.getIdentityMatrix();
     }
     public void updateVisualizer(byte[] bytes, Canvas canvas) {
         mBytes = bytes;
@@ -123,7 +109,6 @@ public class Sprite {
         canvas.drawBitmap(canvasBitmap,identityMatrix,null);
     }
     public void clearVisualizer( Canvas canvas){
-        Log.d(NabstaApplication.LOG_TAG,"Sprint clear visualizer called");
         bounds = new Rect(0,0,1, canvas.getHeight());
         canvas.drawColor(Color.CYAN);
     }

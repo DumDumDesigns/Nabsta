@@ -17,13 +17,11 @@ import android.view.WindowManager;
 
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
-import com.spazomatic.nabsta.tasks.LoadSongTask;
 import com.spazomatic.nabsta.views.actionBar.CurrentSongActionProvider;
+import com.spazomatic.nabsta.views.actionBar.SongsActionProvider;
 import com.spazomatic.nabsta.views.fragments.NewProjectDialog;
 import com.spazomatic.nabsta.views.fragments.OpenProjectDialog;
 import com.spazomatic.nabsta.views.fragments.Studio;
-
-import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends ActionBarActivity implements
         Studio.OnFragmentInteractionListener,
@@ -37,20 +35,27 @@ public class MainActivity extends ActionBarActivity implements
     private IntentFilter batteryChanged;
     private SharedPreferences sharedPreferences;
     private Menu nabstaMenu;
+    private Bundle studioBundle;
+    Fragment studioFragment;
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+        Log.d(NabstaApplication.LOG_TAG, "mainActivity onCreate called");
         //AudioManager audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         //Hardware buttons setting to adjust the media
-
+        setContentView(R.layout.activity_main);
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
         sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
                 Context.MODE_PRIVATE);
-
-        setContentView(R.layout.activity_main);
+        if(sharedPreferences.contains(NabstaApplication.NABSTA_KEEP_SCREEN_ON)){
+            if(sharedPreferences.getBoolean(NabstaApplication.NABSTA_KEEP_SCREEN_ON,true)) {
+                Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",true));
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }else{
+                Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",false));
+            }
+        }
         title = getTitle();
-
         batteryLevelReceiver = new BatteryLevelReceiver();
         batteryChanged = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     }
@@ -62,10 +67,9 @@ public class MainActivity extends ActionBarActivity implements
     }
 
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.d(NabstaApplication.LOG_TAG,"MainActivity onCreateOptions");
+        Log.d(NabstaApplication.LOG_TAG, "MainActivity onCreateOptions");
         nabstaMenu = menu;
         getMenuInflater().inflate(R.menu.menu_main, nabstaMenu);
         if(NabstaApplication.getInstance().getSongInSession() != null) {
@@ -80,6 +84,21 @@ public class MainActivity extends ActionBarActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        Log.d(NabstaApplication.LOG_TAG, "windowFocusChanged");
+        //TODO: Fix this hack: For some reason on app start this is only method that keeps all
+        // tracks isShown true and trackView is not null during updateVisualizer
+        if(hasFocus) {
+            Song currentSong = NabstaApplication.getInstance().getSongInSession();
+            if(currentSong != null){
+                openSong(currentSong);
+            }
+        }
+
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -89,29 +108,13 @@ public class MainActivity extends ActionBarActivity implements
         Log.d(NabstaApplication.LOG_TAG, "Register Batter receiver dynamically...");
         registerReceiver(batteryLevelReceiver, batteryChanged);
 
-        sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
-                Context.MODE_PRIVATE);
-        if(sharedPreferences.contains(NabstaApplication.NABSTA_KEEP_SCREEN_ON)){
-            if(sharedPreferences.getBoolean(NabstaApplication.NABSTA_KEEP_SCREEN_ON,true)) {
-                Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",true));
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            }else{
-                Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",false));
-            }
-        }
-        if(sharedPreferences.contains(NabstaApplication.NABSTA_CURRENT_PROJECT_ID)){
-            Long songId = sharedPreferences.getLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID,0);
-            LoadSongTask loadSongTask = new LoadSongTask();
-            loadSongTask.execute(songId);
-            try {
-                Song currentSOng = loadSongTask.get();
-                openSong(currentSOng);
-            } catch (InterruptedException | ExecutionException e) {
-                Log.e(NabstaApplication.LOG_TAG, "Error loading song", e);
-            }
-        }
+        //TODO: Fix this hack: similar to onWindoFocusChangedHack, this is keeps tracks alive
+        //when screen turns off.
 
-
+        Song currentSong = NabstaApplication.getInstance().getSongInSession();
+        if(currentSong != null){
+            openSong(currentSong);
+        }
     }
 
     @Override
@@ -124,19 +127,8 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(NabstaApplication.LOG_TAG, "MainActivity onStop called...");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(NabstaApplication.LOG_TAG, "MainActivity onDestroy called...");
-    }
-
-    @Override
     public void onNewSong(Song song) {
+        saveSongToSharedPreferences(song);
         openSong(song);
     }
 
@@ -144,9 +136,14 @@ public class MainActivity extends ActionBarActivity implements
     public void onFragmentInteraction(Uri uri) {
         Log.d(NabstaApplication.LOG_TAG, "----------Studio is Calling---------------");
     }
-
+    private void saveSongToSharedPreferences(Song song){
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, song.getId());
+        editor.commit();
+    }
     @Override
     public void onOpenSong(Song song) {
+        saveSongToSharedPreferences(song);
         openSong(song);
     }
     private void openSong(Song song){
@@ -154,23 +151,23 @@ public class MainActivity extends ActionBarActivity implements
                 "----------Opening Project %s------------",
                 song.getName()));
         NabstaApplication.getInstance().setSongInSession(song);
-        final SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, song.getId());
-        editor.commit();
         if(nabstaMenu != null) {
             MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
-            currentSongMenuItem.setTitle(NabstaApplication.getInstance().getSongInSession().getName());
+            currentSongMenuItem.setTitle(song.getName());
         }
-        Log.d(NabstaApplication.LOG_TAG,String.format("Opening Studio with song id %d",song.getId()));
-        Fragment fragment = Studio.newInstance(song.getName(), song.getId());
+        Log.d(NabstaApplication.LOG_TAG,String.format(
+                "Opening Studio with song id %d",song.getId()));
+        studioBundle = new Bundle();
+        studioBundle.putString(Studio.SONG_NAME, song.getName());
+        studioBundle.putLong(SongsActionProvider.SONG_ID, song.getId());
+        studioFragment = Studio.newInstance(song.getName(), song.getId());
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment)
+                .replace(R.id.container, studioFragment)
                 .addToBackStack(null)
                 .commit();
     }
-
 
     @Override
     public void onAddTrack(Song song) {

@@ -12,6 +12,7 @@ import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.dao.DaoMaster;
 import com.spazomatic.nabsta.db.dao.DaoSession;
 import com.spazomatic.nabsta.tasks.CreateSongTask;
+import com.spazomatic.nabsta.tasks.LoadSongTask;
 import com.spazomatic.nabsta.tasks.LoadSongsTask;
 
 import java.io.File;
@@ -33,22 +34,22 @@ public class NabstaApplication extends Application{
     private static NabstaApplication nabstaApplicationInstance;
     private static boolean activityVisible;
     private Song songInSession;
-
     private DaoSession daoSession;
+
+
     public static NabstaApplication getInstance(){
         return nabstaApplicationInstance;
     }
     @Override
     public void onCreate() {
+
         nabstaApplicationInstance = this;
+
         Log.d(LOG_TAG, "Nabsta starting...");
+
         createRootDirectory();
-
         setupDataBase();
-
-        loadExampleSong();
-
-
+        loadSongOnStartUp();
     }
 
     private void createRootDirectory() {
@@ -70,23 +71,32 @@ public class NabstaApplication extends Application{
         }
     }
 
-    private void loadExampleSong() {
+    private void loadSongOnStartUp() {
         LoadSongsTask loadSongsTask = new LoadSongsTask();
         loadSongsTask.execute();
         List<Song> songs = null;
+        SharedPreferences sharedPreferences = getSharedPreferences(
+                NabstaApplication.NABSTA_SHARED_PREFERENCES,Context.MODE_PRIVATE);
         try {
             songs = loadSongsTask.get();
             if(songs == null || songs.isEmpty()){
                 Song exampleSong = createSong("Example Project","Example Artist");
                 if(exampleSong != null) {
                     this.setSongInSession(exampleSong);
-                    SharedPreferences sharedPreferences =
-                            getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
-                                    Context.MODE_PRIVATE);
                     final SharedPreferences.Editor editor = sharedPreferences.edit();
-
                     editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, exampleSong.getId());
                     editor.commit();
+                }
+            }else{
+                Long songId = sharedPreferences.getLong(
+                        NabstaApplication.NABSTA_CURRENT_PROJECT_ID,0);
+                LoadSongTask loadSongTask = new LoadSongTask();
+                loadSongTask.execute(songId);
+                try {
+                    Song currentSOng = loadSongTask.get();
+                    this.setSongInSession(currentSOng);
+                } catch (InterruptedException | ExecutionException e) {
+                    Log.e(NabstaApplication.LOG_TAG, "Error loading song", e);
                 }
             }
         } catch (InterruptedException | ExecutionException e) {

@@ -7,9 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.audiofx.Visualizer;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -21,7 +18,6 @@ import com.spazomatic.nabsta.db.Track;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 
 /**
  * Created by samuelsegal on 5/16/15.
@@ -38,42 +34,20 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     private Matrix identityMatrix;
     private Track track;
     private boolean isDisplayWaveFormRealTime;
-    private UIHandler uiHandler;
-    private Object lock = new Object();
+
     public TrackVisualizerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         getHolder().addCallback(this);
-        uiHandler = new UIHandler(Looper.getMainLooper(),this);
-        NabstaApplication.getInstance().getBaseContext();
-
-    }
-    public Canvas getBitmapCanvas() {
-        return bitmapCanvas;
-    }
-
-    public Bitmap getCanvasBitmap() {
-        return canvasBitmap;
-    }
-
-    public Matrix getIdentityMatrix() {
-        return identityMatrix;
+        setDrawingCacheEnabled(true);
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.d(NabstaApplication.LOG_TAG, String.format("Surface created trackview null = %b", trackView == null));
 
-    try {
         trackView = new TrackView(holder);
-        Log.d(NabstaApplication.LOG_TAG, String.format("TrackView Createdd trackview null = %b", trackView == null));
-        Log.d(NabstaApplication.LOG_TAG, String.format("bimapCanvas null = %b", bitmapCanvas == null));
         trackView.setBitmapCanvas(bitmapCanvas);
-        Log.d(NabstaApplication.LOG_TAG, String.format("canvasBitmap null = %b", canvasBitmap == null));
         trackView.setCanvasBitmap(canvasBitmap);
-        Log.d(NabstaApplication.LOG_TAG, String.format("identityMatrix null = %b", identityMatrix == null));
         trackView.setIdentityMatrix(identityMatrix);
-        Log.d(LOG_TAG,String.format("THE FECKING TRACK FECKING VIEW IS CREATED WTFEEEEE? IS IT FECKING SHOWN????? %b",isShown()));
-
 
         Canvas canvas = holder.lockCanvas();
         if (canvas != null) {
@@ -82,25 +56,19 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
             holder.unlockCanvasAndPost(canvas);
         }
 
-    }catch(Exception e){
-        Log.e(LOG_TAG,"HMMMMMMMMMMMMM HU");
-    }
-
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.d(NabstaApplication.LOG_TAG, String.format("Surface CHANGED trackview null = %b", trackView == null));
 
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.d(NabstaApplication.LOG_TAG, String.format("Surface DEstroyed trackview null = %b", trackView == null));
+
     }
 
     private void updateVisualizer(byte[] waveform) {
-
         try {
             if(trackView != null) {
                 trackView.draw(waveform);
@@ -112,7 +80,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
     private void reset(){
-
+/*
         Log.d(LOG_TAG, String.format("calling RESET track view null = %b", trackView == null));
         Log.d(LOG_TAG, String.format("Is view Activated %b", isActivated()));
         Log.d(LOG_TAG,String.format("Is view shown %b",isShown()));
@@ -130,6 +98,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         Log.d(LOG_TAG,String.format("Is view isImportantForAccessibility %b",isImportantForAccessibility()));
         Log.d(LOG_TAG,String.format("Is view isSelected %b",isSelected()));
         Log.d(LOG_TAG,String.format("Is view isInEditMode %b",isInEditMode()));
+        */
         if(trackView != null) {
             trackView.clearVisualizer();
         }else{
@@ -151,7 +120,6 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
         identityMatrix = new Matrix();
 
-
         setMeasuredDimension(w, h);
     }
 
@@ -159,18 +127,13 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         try {
             Bitmap trackImage = BitmapFactory.decodeFile(track.getBitmap_file_name());
             if (trackImage != null && isDisplayWaveFormRealTime) {
-                Log.d(LOG_TAG, "DISPLAY TRACK IMAGE BITMAP");
-
                 if (canvas != null) {
-                    Log.d(LOG_TAG, String.format(
-                            "Display ime %d wide %d", trackImage.getWidth(), trackImage.getHeight()));
-
                     canvas.drawBitmap(trackImage, 0, 0, null);
-
                 }
             }
         }catch(Exception e){
-            Log.e(LOG_TAG,String.format("Error with track bitmap: Error Message %s",e.getMessage()),e);
+            Log.e(LOG_TAG,String.format(
+                    "Error with track bitmap: Error Message %s",e.getMessage()),e);
         }
     }
     @Override
@@ -182,11 +145,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     public void trackBegin(int audioSessionId) {
-        Log.d(NabstaApplication.LOG_TAG, "Setting up the feckin visualizer");
         reset();
-        //Message trackCompleteMessage = uiHandler.obtainMessage(
-        //        RESET_VISUALIZER, this);
-        //trackCompleteMessage.sendToTarget();
         trackVisualizer = new Visualizer(audioSessionId);
         //trackVisualizer.setEnabled(false);
         trackVisualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[1]);
@@ -207,8 +166,6 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     }
     @Override
     public void trackComplete() {
-        Log.d(LOG_TAG, String.format("SAving trackView image %s ", track.getBitmap_file_name()));
-
         storeImage(canvasBitmap, track.getBitmap_file_name());
         if(trackVisualizer != null){
             trackVisualizer.setEnabled(false);
@@ -228,10 +185,6 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     byte[] wf;
     @Override
     public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
-        //this.wf = waveform;
-        //Message trackCompleteMessage = uiHandler.obtainMessage(
-                //UPDATE_VISUALIZER, this);
-        //trackCompleteMessage.sendToTarget();
         updateVisualizer(waveform);
     }
 
@@ -241,46 +194,12 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     }
     private void storeImage(Bitmap image,String bitmapFileName) {
         try {
-            Log.d(LOG_TAG,String.format("Storing track waveform image %s", bitmapFileName));
             FileOutputStream fos = new FileOutputStream(bitmapFileName);
             image.compress(Bitmap.CompressFormat.JPEG, 90, fos);
             fos.close();
         } catch (IOException e) {
             Log.d(NabstaApplication.LOG_TAG, String.format(
                     "Error Saving Bitmap %s ", e.getMessage()),e);
-        }
-    }
-    private static final int UPDATE_VISUALIZER = 6;
-    private static final int RESET_VISUALIZER = 7;
-
-    private static class UIHandler extends Handler {
-        private WeakReference<TrackVisualizerView> trackVisualizerViewWeakReference;
-
-        public UIHandler(Looper looper, TrackVisualizerView trackVisualizerView) {
-            super(looper);
-            this.trackVisualizerViewWeakReference = new WeakReference<>(trackVisualizerView);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-
-            TrackVisualizerView trackVisualizerView = trackVisualizerViewWeakReference.get();
-            switch(msg.what){
-                case UPDATE_VISUALIZER:{
-                    trackVisualizerView.updateVisualizer(trackVisualizerView.wf);
-                    break;
-                }
-                case RESET_VISUALIZER: {
-                    trackVisualizerView.reset();
-                    break;
-                }
-                default:{
-                    super.handleMessage(msg);
-                    break;
-                }
-            }
-
-
         }
     }
 }
