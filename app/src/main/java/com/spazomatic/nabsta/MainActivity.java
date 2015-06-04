@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -24,7 +23,6 @@ import com.spazomatic.nabsta.views.fragments.OpenProjectDialog;
 import com.spazomatic.nabsta.views.fragments.Studio;
 
 public class MainActivity extends ActionBarActivity implements
-        Studio.OnFragmentInteractionListener,
         NewProjectDialog.OnNewSongListener,
         OpenProjectDialog.OnOpenSongListener,
         CurrentSongActionProvider.OnAddTrackListener{
@@ -132,10 +130,7 @@ public class MainActivity extends ActionBarActivity implements
         openSong(song);
     }
 
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-        Log.d(NabstaApplication.LOG_TAG, "----------Studio is Calling---------------");
-    }
+
     private void saveSongToSharedPreferences(Song song){
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, song.getId());

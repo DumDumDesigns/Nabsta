@@ -174,7 +174,6 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
 
-
     private void updateVisualizer(double[] fft) {
         try {
             trackView.draw(fft);

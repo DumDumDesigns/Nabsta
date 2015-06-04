@@ -2,7 +2,6 @@ package com.spazomatic.nabsta.views.fragments;
 
 import android.app.Activity;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -30,7 +29,6 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the * {@link Studio.OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link Studio#newInstance} factory method to
  * create an instance of this fragment.
@@ -40,7 +38,7 @@ public class Studio extends Fragment {
     private String songName;
     private Long songId;
     private List<TrackMessenger> trackMessengerList;
-    private OnFragmentInteractionListener mListener;
+
     //private View studioView;
     /**
      * Use this factory method to create a new instance of * this fragment using the provided parameters.
@@ -89,12 +87,13 @@ public class Studio extends Fragment {
                         song.getName(),
                         song.getTracks().size()));
                 final List<Track> trackList = song.getTracks();
-                trackMessengerList = new ArrayList<>();
+                trackMessengerList = new ArrayList<>(trackList.size());
+                int trackCount = 0;
                 for (Track track : trackList) {
                     TrackMessenger trackMessenger = new
                             TrackMessenger(track);
                     trackMessenger.setTrackID(track.getId());
-                    trackMessengerList.add(trackMessenger);
+                    trackMessengerList.add(trackCount++,trackMessenger);
                 }
             }
         } catch (InterruptedException | ExecutionException e) {
@@ -104,8 +103,16 @@ public class Studio extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.d(NabstaApplication.LOG_TAG, "studio fragment onCreateView called");
+    public void onLowMemory() {
+        super.onLowMemory();
+        Log.e(NabstaApplication.LOG_TAG,
+                "<<<<<<<<<<<CHECK YOUR CODE LOW MEMORY IN STUDIO FRAGMENT>>>>>>>>>>>>");
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        Log.e(NabstaApplication.LOG_TAG, "studio fragment onCreateView called");
         final View studioView = inflater.inflate(R.layout.fragment_studio, container, false);
         final ListView trackListView =
                 (ListView)
@@ -122,51 +129,33 @@ public class Studio extends Fragment {
         return studioView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
+
 
     @Override
     public void onAttach(Activity activity) {
+        Log.e(NabstaApplication.LOG_TAG, "studio fragment onAttach called");
         super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener)
-                    activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
     public void onDetach() {
+        Log.e(NabstaApplication.LOG_TAG, "studio fragment onDetach called");
         super.onDetach();
-        mListener = null;
+
     }
 
-    /**
-     * This interface must be implemented by activities that
-     * contain this
-     * fragment to allow an interaction in this fragment to be
-     * communicated
-     * to the activity and potentially other fragments contained
-     * in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/
-     * communicating.html"
-     * >Communicating with Other Fragments</a> for more
-     * information.
-     */
-    public interface OnFragmentInteractionListener {
-        void onFragmentInteraction(Uri uri);
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.e(NabstaApplication.LOG_TAG, "studio fragment onDestroyView called");
+        trackMessengerList.clear();
+        trackMessengerList = null;
     }
 
-
+    @Override
+    public void setRetainInstance(boolean retain) {
+        super.setRetainInstance(retain);
+    }
 
     private static class ViewHolder {
         final TrackMuteButton trackMuteButton;
@@ -222,5 +211,6 @@ public class Studio extends Fragment {
             return view;
             */
         }
+
     }
 }
