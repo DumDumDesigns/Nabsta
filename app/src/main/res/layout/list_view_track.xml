@@ -16,6 +16,6 @@
         android:background="@drawable/track_record_btn" />
     <com.spazomatic.nabsta.views.TrackVisualizerView
         android:id="@+id/trackVisualizer"
-        android:layout_width="1400dp"
+        android:layout_width="match_parent"
         android:layout_height="50dp"/>
 </LinearLayout>
