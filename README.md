@@ -3,7 +3,7 @@ It will  behave similar to a four track machine used dub tracks for music creati
 Currently it is required to use headphones to avoid echo from speakers top microphone.
 Nabsta is still in development / testing phases with. 
 
-
+![](https://github.com/samuelsegal/Nabsta/blob/master/nabsta_6_5_15_screenshot.png)
 Below is description of current functionality to be tested.
 
 1. Project creation through action bar.
