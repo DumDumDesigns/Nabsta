@@ -1,7 +1,8 @@
 Nabsta is a multi track audio recording application to run on android platforms. 
 It will  behave similar to a four track machine used dub tracks for music creation in 80's on Tascam, or similar to a track editor such as Ardour (far from this at the moment, but such capability is in long term goal) 
 Currently it is required to use headphones to avoid echo from speakers top microphone.
-Nabsta is still in development / testing phases with
+Nabsta is still in development / testing phases with. 
+
 
 Below is description of current functionality to be tested.
 
