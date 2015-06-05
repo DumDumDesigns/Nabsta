@@ -65,7 +65,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-
+        track = null;
     }
 
     private void updateVisualizer(byte[] waveform) {

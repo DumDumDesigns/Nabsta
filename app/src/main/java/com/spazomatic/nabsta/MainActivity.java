@@ -106,7 +106,7 @@ public class MainActivity extends ActionBarActivity implements
         Log.d(NabstaApplication.LOG_TAG, "Register Batter receiver dynamically...");
         registerReceiver(batteryLevelReceiver, batteryChanged);
 
-        //TODO: Fix this hack: similar to onWindoFocusChangedHack, this is keeps tracks alive
+        //TODO: Fix this hack: similar to onWindoFocusChangedHack, this keeps tracks alive
         //when screen turns off.
 
         Song currentSong = NabstaApplication.getInstance().getSongInSession();
