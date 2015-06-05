@@ -7,7 +7,9 @@ Below is a screenshot as of 6/4/2015.
 
 ![](https://github.com/samuelsegal/Nabsta/blob/master/nabsta_6_5_15_screenshot.png)
 
-Note: Currently it is required to use headphones to avoid echo from speakers top microphone. Though without headphones an effect is created that may be appealing to some.
+Note: Currently it is required to use headphones to avoid echo from speakers top microphone. Though without headphones an effect is created that may be appealing to some. 
+
+Currently there is a noticable delay in record mode. This will be fixed.
 
 Below is description of current functionality to be tested.
 
@@ -20,6 +22,7 @@ Below is description of current functionality to be tested.
 7. Song currently in session is reloaded on next run of app.
 
 To be developed:
+
 1. A track bar to be displayed following the playback to share location in time of song.
 2. Loading of audio tracks of any format and waveform to be generated for display.
 3. Mix down of selected tracks to one master track including pan and surround sound effect.
