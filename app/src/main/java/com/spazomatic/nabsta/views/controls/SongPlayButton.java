@@ -13,7 +13,6 @@ import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.audio.TrackMessenger;
 
 import java.lang.ref.WeakReference;
-import java.util.List;
 
 /**
  * Created by samuelsegal on 5/20/15.
@@ -22,7 +21,7 @@ public class SongPlayButton extends Button implements View.OnClickListener,
         TrackMessenger.TrackCompleteListener{
 
     private UIHandler uiHandler;
-    private List<TrackMessenger> trackMessengerList;
+    private TrackMessenger[] trackMessengerList;
     private final static int TRACKS_ALL_COMPLETE_STATE = 3;
     private final static int PLAY_ALL_TRACKS = 4;
     @Override
@@ -42,11 +41,11 @@ public class SongPlayButton extends Button implements View.OnClickListener,
         uiHandler = new UIHandler(Looper.getMainLooper(),this);
     }
 
-    public List<TrackMessenger> getTrackMessengerList() {
-        return trackMessengerList;
-    }
+   // public List<TrackMessenger> getTrackMessengerList() {
+       // return trackMessengerList;
+    //}
 
-    public void setTrackMessengerList(List<TrackMessenger> trackMessengerList) {
+    public void setTrackMessengerList(TrackMessenger[] trackMessengerList) {
 
         this.trackMessengerList = trackMessengerList;
 
@@ -64,7 +63,7 @@ public class SongPlayButton extends Button implements View.OnClickListener,
         if(!isSelected()){
             if(trackMessengerList != null) {
                 Log.d(NabstaApplication.LOG_TAG, String.format(
-                        "Playing %d tracks", trackMessengerList.size()));
+                        "Playing %d tracks", trackMessengerList.length));
                 for (TrackMessenger trackMessenger : trackMessengerList) {
                     trackMessenger.setTrackCompleteListener(this);
                     Thread trackThread = new Thread(trackMessenger);
@@ -75,7 +74,7 @@ public class SongPlayButton extends Button implements View.OnClickListener,
         }else{
             if(trackMessengerList != null) {
                 Log.d(NabstaApplication.LOG_TAG, String.format(
-                        "Pausing %d tracks", trackMessengerList.size()));
+                        "Pausing %d tracks", trackMessengerList.length));
                 for (TrackMessenger trackMessenger : trackMessengerList) {
                     trackMessenger.pauseTrack();
                 }

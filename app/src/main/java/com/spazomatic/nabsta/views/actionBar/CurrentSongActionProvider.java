@@ -13,6 +13,8 @@ import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.tasks.AddTrackTask;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Created by samuelsegal on 5/18/15.
  */
@@ -52,9 +54,15 @@ public class CurrentSongActionProvider extends ActionProvider {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
-                final Song song = NabstaApplication.getInstance().getSongInSession();
+                Song song = NabstaApplication.getInstance().getSongInSession();
                 AddTrackTask addTrackTask = new AddTrackTask();
                 addTrackTask.execute(song.getId());
+                try {
+                    song = addTrackTask.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    Log.e(NabstaApplication.LOG_TAG,String.format(
+                            "Error adding track with Error Message %s",e.getMessage()),e);
+                }
                 resetStudioFragment.onAddTrack(song);
                 return true;
             }

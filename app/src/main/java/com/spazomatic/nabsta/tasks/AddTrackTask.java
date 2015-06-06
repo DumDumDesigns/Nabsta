@@ -14,12 +14,12 @@ import java.io.IOException;
 /**
  * Created by samuelsegal on 5/19/15.
  */
-public class AddTrackTask extends AsyncTask<Long,Void,Track> {
+public class AddTrackTask extends AsyncTask<Long,Void,Song> {
 
     private final static String LOG_TAG = String.format(
             "Nabsta: %s", AddTrackTask.class.getSimpleName());
     @Override
-    protected Track doInBackground(Long... params) {
+    protected Song doInBackground(Long... params) {
         Long songId = params[0];
 
         DaoSession daoSession = NabstaApplication.getInstance().getDaoSession();
@@ -28,14 +28,15 @@ public class AddTrackTask extends AsyncTask<Long,Void,Track> {
         track.setName("Track");
 
         daoSession.getTrackDao().insert(track);
-
+        daoSession.clear();
         Song song = daoSession.getSongDao().load(songId);
         createTrackFile(song,track);
         track.update();
+        song.update();
 
         track.refresh();
         song.refresh();
-        return track;
+        return song;
     }
 
     private void createTrackFile(Song song,Track defaultTrack) {

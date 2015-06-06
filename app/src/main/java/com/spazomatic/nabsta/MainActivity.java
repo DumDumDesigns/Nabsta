@@ -6,8 +6,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -17,7 +15,6 @@ import android.view.WindowManager;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
 import com.spazomatic.nabsta.views.actionBar.CurrentSongActionProvider;
-import com.spazomatic.nabsta.views.actionBar.SongsActionProvider;
 import com.spazomatic.nabsta.views.fragments.NewProjectDialog;
 import com.spazomatic.nabsta.views.fragments.OpenProjectDialog;
 import com.spazomatic.nabsta.views.fragments.Studio;
@@ -27,14 +24,12 @@ public class MainActivity extends ActionBarActivity implements
         OpenProjectDialog.OnOpenSongListener,
         CurrentSongActionProvider.OnAddTrackListener{
 
-
-    private CharSequence title;
     private BatteryLevelReceiver batteryLevelReceiver;
     private IntentFilter batteryChanged;
     private SharedPreferences sharedPreferences;
     private Menu nabstaMenu;
-    private Bundle studioBundle;
-    Fragment studioFragment;
+
+
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
@@ -45,6 +40,13 @@ public class MainActivity extends ActionBarActivity implements
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
         sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
                 Context.MODE_PRIVATE);
+        checkPrefs();
+
+        batteryLevelReceiver = new BatteryLevelReceiver();
+        batteryChanged = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    }
+
+    private void checkPrefs() {
         if(sharedPreferences.contains(NabstaApplication.NABSTA_KEEP_SCREEN_ON)){
             if(sharedPreferences.getBoolean(NabstaApplication.NABSTA_KEEP_SCREEN_ON,true)) {
                 Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",true));
@@ -53,9 +55,6 @@ public class MainActivity extends ActionBarActivity implements
                 Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",false));
             }
         }
-        title = getTitle();
-        batteryLevelReceiver = new BatteryLevelReceiver();
-        batteryChanged = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     }
 
     @Override
@@ -108,7 +107,6 @@ public class MainActivity extends ActionBarActivity implements
 
         //TODO: Fix this hack: similar to onWindoFocusChangedHack, this keeps tracks alive
         //when screen turns off.
-
         Song currentSong = NabstaApplication.getInstance().getSongInSession();
         if(currentSong != null){
             openSong(currentSong);
@@ -150,18 +148,12 @@ public class MainActivity extends ActionBarActivity implements
             MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
             currentSongMenuItem.setTitle(song.getName());
         }
-        Log.d(NabstaApplication.LOG_TAG,String.format(
-                "Opening Studio with song id %d",song.getId()));
-        studioBundle = new Bundle();
-        studioBundle.putString(Studio.SONG_NAME, song.getName());
-        studioBundle.putLong(SongsActionProvider.SONG_ID, song.getId());
-        studioFragment = Studio.newInstance(song.getName(), song.getId());
+        Log.d(NabstaApplication.LOG_TAG, String.format(
+                "Opening Studio with song id %d", song.getId()));
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, studioFragment)
-                .addToBackStack(null)
-                .commit();
+        Studio studioFragment = (Studio)getSupportFragmentManager().findFragmentById(R.id.studioFragment);
+
+        studioFragment.setProject(song);
     }
 
     @Override

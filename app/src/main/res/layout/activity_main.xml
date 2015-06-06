@@ -1,7 +1,8 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:id="@+id/container"
+    android:id="@+id/studioFragment"
+    android:name="com.spazomatic.nabsta.views.fragments.Studio"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-</RelativeLayout>
+</fragment>
