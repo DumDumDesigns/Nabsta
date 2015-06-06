@@ -6,6 +6,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -58,13 +59,6 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(NabstaApplication.LOG_TAG, "MainActivity onStart called...");
-    }
-
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         Log.d(NabstaApplication.LOG_TAG, "MainActivity onCreateOptions");
         nabstaMenu = menu;
@@ -78,22 +72,15 @@ public class MainActivity extends ActionBarActivity implements
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-        Log.d(NabstaApplication.LOG_TAG, "windowFocusChanged");
-        //TODO: Fix this hack: For some reason on app start this is only method that keeps all
-        // tracks isShown true and trackView is not null during updateVisualizer
-        if(hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if(hasWindowFocus()){
+            //TODO:Fix this hack. only way track renderer is alive seems by waiting till this state to open trackViewVisualizers. This is an unacceptable hack
             Song currentSong = NabstaApplication.getInstance().getSongInSession();
             if(currentSong != null){
                 openSong(currentSong);
             }
         }
-
     }
 
     @Override
@@ -128,7 +115,6 @@ public class MainActivity extends ActionBarActivity implements
         openSong(song);
     }
 
-
     private void saveSongToSharedPreferences(Song song){
         final SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, song.getId());
@@ -150,8 +136,8 @@ public class MainActivity extends ActionBarActivity implements
         }
         Log.d(NabstaApplication.LOG_TAG, String.format(
                 "Opening Studio with song id %d", song.getId()));
-
-        Studio studioFragment = (Studio)getSupportFragmentManager().findFragmentById(R.id.studioFragment);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Studio studioFragment = (Studio)fragmentManager.findFragmentById(R.id.studioFragment);
 
         studioFragment.setProject(song);
     }

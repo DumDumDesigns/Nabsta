@@ -28,7 +28,7 @@ public class AddTrackTask extends AsyncTask<Long,Void,Song> {
         track.setName("Track");
 
         daoSession.getTrackDao().insert(track);
-        daoSession.clear();
+
         Song song = daoSession.getSongDao().load(songId);
         createTrackFile(song,track);
         track.update();

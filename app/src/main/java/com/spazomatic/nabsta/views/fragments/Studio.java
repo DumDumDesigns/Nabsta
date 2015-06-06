@@ -1,6 +1,5 @@
 package com.spazomatic.nabsta.views.fragments;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -61,7 +60,7 @@ public class Studio extends Fragment {
     public void onLowMemory() {
         super.onLowMemory();
         Log.e(NabstaApplication.LOG_TAG,
-                "<<<<<<<<<<<CHECK YOUR CODE LOW MEMORY IN STUDIO FRAGMENT>>>>>>>>>>>>");
+                "<<<<<<<<<<<<<<<<LOW MEMORY IN STUDIO FRAGMENT>>>>>>>>>>>>");
     }
 
     @Override
@@ -69,6 +68,7 @@ public class Studio extends Fragment {
                              Bundle savedInstanceState) {
         Log.e(NabstaApplication.LOG_TAG, "studio fragment onCreateView called");
         View studioView = inflater.inflate(R.layout.fragment_studio, container, false);
+
 
         return studioView;
     }
@@ -78,38 +78,15 @@ public class Studio extends Fragment {
         final TrackMessenger[] trackMessengerList = createTrackMessengerList(song);
         final ListView trackListView =
             (ListView) studioView.findViewById(R.id.list_view_tracks);
+
         final TrackListAdapter songAdapter = new
                 TrackListAdapter(getActivity(), R.layout.list_view_track,
                 trackMessengerList);
         trackListView.setAdapter(songAdapter);
+
         final SongPlayButton songPlayButton =
-                (SongPlayButton) studioView.findViewById(R.id.songPlayBtn);
-
+                (SongPlayButton)studioView.findViewById(R.id.songPlayBtn);
         songPlayButton.setTrackMessengerList(trackMessengerList);
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        Log.e(NabstaApplication.LOG_TAG, "studio fragment onAttach called");
-        super.onAttach(activity);
-    }
-
-    @Override
-    public void onDetach() {
-        Log.e(NabstaApplication.LOG_TAG, "studio fragment onDetach called");
-        super.onDetach();
-
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.e(NabstaApplication.LOG_TAG, "studio fragment onDestroyView called");
-    }
-
-    @Override
-    public void setRetainInstance(boolean retain) {
-        super.setRetainInstance(retain);
     }
 
     private static class ViewHolder {

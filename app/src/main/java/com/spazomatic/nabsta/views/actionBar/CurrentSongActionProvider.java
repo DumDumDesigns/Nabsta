@@ -22,6 +22,7 @@ public class CurrentSongActionProvider extends ActionProvider {
 
     private Context context;
     private MenuItem addTrackMenuItem;
+    private MenuItem deleteTrackMenuItem;
     public static final String SONG_ID = "songId";
     private OnAddTrackListener resetStudioFragment;
 
@@ -53,23 +54,37 @@ public class CurrentSongActionProvider extends ActionProvider {
         addTrackMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                addTrackMenuItemClick();
+                return true;
+            }
+        });
 
-                Song song = NabstaApplication.getInstance().getSongInSession();
-                AddTrackTask addTrackTask = new AddTrackTask();
-                addTrackTask.execute(song.getId());
-                try {
-                    song = addTrackTask.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    Log.e(NabstaApplication.LOG_TAG,String.format(
-                            "Error adding track with Error Message %s",e.getMessage()),e);
-                }
-                resetStudioFragment.onAddTrack(song);
+        deleteTrackMenuItem = subMenu.add(R.string.delete_track);
+        deleteTrackMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                deleteTrackMenuItemClick();
                 return true;
             }
         });
     }
 
+    private void deleteTrackMenuItemClick() {
 
+    }
+
+    private void addTrackMenuItemClick(){
+        Song song = NabstaApplication.getInstance().getSongInSession();
+        AddTrackTask addTrackTask = new AddTrackTask();
+        addTrackTask.execute(song.getId());
+        try {
+            song = addTrackTask.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(NabstaApplication.LOG_TAG,String.format(
+                    "Error adding track with Error Message %s",e.getMessage()),e);
+        }
+        resetStudioFragment.onAddTrack(song);
+    }
     @Override
     public boolean onPerformDefaultAction() {
         return super.onPerformDefaultAction();
