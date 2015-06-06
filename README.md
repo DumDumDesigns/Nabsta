@@ -1,7 +1,7 @@
-Nabsta is a multi track audio recording application to run on android platforms. 
+### Nabsta multi track audio recording application to run on android devices. 
 It will  behave similar to a four track machine or track editor used to dub tracks for music creation. 
 
-Nabsta is still in development / testing phases with.
+Nabsta is still in development / testing phases.
  
 Below is a screenshot as of 6/4/2015. 
 
