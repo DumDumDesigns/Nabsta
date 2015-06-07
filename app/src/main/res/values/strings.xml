@@ -30,6 +30,7 @@
     <string name="cancel">Cancel</string>
     <string name="add_track">Add Track</string>
     <string name="delete_track">Delete Track</string>
+    <string name="delete_tracks">Delete Tracks</string>
     <string name="create_project">Create Project</string>
 
     <string name="project_name">Name</string>

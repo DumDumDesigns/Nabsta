@@ -56,7 +56,7 @@ public class DeleteTracksDialog extends DialogFragment{
         songListView.setAdapter(trackListAdapter);
 
         builder.setView(dialogView)
-                .setPositiveButton(R.string.save_changes, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.delete_tracks, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             DeleteTracksTask deleteTracksTask = new DeleteTracksTask();
                             Track[] tracksToDelete = new Track[countOfTracksToDelete];
@@ -127,9 +127,6 @@ public class DeleteTracksDialog extends DialogFragment{
             viewHolder.deleteCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    Log.d(NabstaApplication.LOG_TAG,String.format(
-                            "Deleting Position %d is trackName %s %b",
-                            position, getItem(position).getName(), isChecked));
                     if(isChecked){
                         ++countOfTracksToDelete;
                         listOfTracksToDelete.add(getItem(position));
