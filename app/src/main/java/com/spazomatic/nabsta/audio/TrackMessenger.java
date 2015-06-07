@@ -27,6 +27,7 @@ import java.io.OutputStream;
  */
 public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackListener,
         TrackRecordButton.OnRecordTrackListener{
+
     private final static String LOG_TAG = String.format(
             "Nabsta: %s", TrackMessenger.class.getSimpleName());
 
@@ -91,6 +92,9 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                     AudioFormat.ENCODING_PCM_16BIT,
                     MIN_BUFF_SIZE,
                     AudioTrack.MODE_STREAM);
+            if(isMuted()){
+                onMuteTrackClicked(true);
+            }
             callListenersTrackBegin(audioTrack.getAudioSessionId(), false);
             audioTrack.play();
             int numberOfBytesWritten = audioTrack.write(trackBytes, 0, trackBytes.length);
