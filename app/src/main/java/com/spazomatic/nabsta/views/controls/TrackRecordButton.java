@@ -26,7 +26,7 @@ public class TrackRecordButton extends Button implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
-        Log.d(NabstaApplication.LOG_TAG,String.format("Record Button isSelected %b", isSelected()));
+        Log.d(NabstaApplication.LOG_TAG,String.format("Selecting Record BUtton %b", !isSelected()));
         if(isSelected()){
             setSelected(false);
             onRecordTrackListener.recordTrackClicked(false);

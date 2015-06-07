@@ -1,5 +1,6 @@
 package com.spazomatic.nabsta.views.actionBar;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v4.view.ActionProvider;
 import android.util.Log;
@@ -12,6 +13,7 @@ import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.tasks.AddTrackTask;
+import com.spazomatic.nabsta.views.fragments.DeleteTracksDialog;
 
 import java.util.concurrent.ExecutionException;
 
@@ -70,7 +72,9 @@ public class CurrentSongActionProvider extends ActionProvider {
     }
 
     private void deleteTrackMenuItemClick() {
-
+        Activity activity = (Activity)((ContextThemeWrapper)context).getBaseContext();
+        DeleteTracksDialog manageProjectsDialog = new DeleteTracksDialog();
+        manageProjectsDialog.show(activity.getFragmentManager(),"DeleteTracksDialog");
     }
 
     private void addTrackMenuItemClick(){

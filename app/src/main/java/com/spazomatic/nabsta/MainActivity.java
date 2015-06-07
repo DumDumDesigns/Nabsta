@@ -16,6 +16,7 @@ import android.view.WindowManager;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
 import com.spazomatic.nabsta.views.actionBar.CurrentSongActionProvider;
+import com.spazomatic.nabsta.views.fragments.DeleteTracksDialog;
 import com.spazomatic.nabsta.views.fragments.NewProjectDialog;
 import com.spazomatic.nabsta.views.fragments.OpenProjectDialog;
 import com.spazomatic.nabsta.views.fragments.Studio;
@@ -23,7 +24,8 @@ import com.spazomatic.nabsta.views.fragments.Studio;
 public class MainActivity extends ActionBarActivity implements
         NewProjectDialog.OnNewSongListener,
         OpenProjectDialog.OnOpenSongListener,
-        CurrentSongActionProvider.OnAddTrackListener{
+        CurrentSongActionProvider.OnAddTrackListener,
+        DeleteTracksDialog.OnDeleteTracksListener {
 
     private BatteryLevelReceiver batteryLevelReceiver;
     private IntentFilter batteryChanged;
@@ -92,7 +94,7 @@ public class MainActivity extends ActionBarActivity implements
         Log.d(NabstaApplication.LOG_TAG, "Register Batter receiver dynamically...");
         registerReceiver(batteryLevelReceiver, batteryChanged);
 
-        //TODO: Fix this hack: similar to onWindoFocusChangedHack, this keeps tracks alive
+        //TODO: Fix this hack: similar to onWindowFocusChangedHack, this keeps tracks alive
         //when screen turns off.
         Song currentSong = NabstaApplication.getInstance().getSongInSession();
         if(currentSong != null){
@@ -147,4 +149,10 @@ public class MainActivity extends ActionBarActivity implements
         //TODO: Do not reopen whole song, should just add track view
         openSong(song);
     }
+
+    @Override
+    public void onDeleteTracks(Song song) {
+        openSong(song);
+    }
+
 }

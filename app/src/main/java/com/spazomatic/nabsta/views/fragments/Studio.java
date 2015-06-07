@@ -80,7 +80,7 @@ public class Studio extends Fragment {
             (ListView) studioView.findViewById(R.id.list_view_tracks);
 
         final TrackListAdapter songAdapter = new
-                TrackListAdapter(getActivity(), R.layout.list_view_track,
+                TrackListAdapter(getActivity(), R.id.list_view_tracks,
                 trackMessengerList);
         trackListView.setAdapter(songAdapter);
 
@@ -89,11 +89,11 @@ public class Studio extends Fragment {
         songPlayButton.setTrackMessengerList(trackMessengerList);
     }
 
-    private static class ViewHolder {
+    private static class SongViewHolder {
         final TrackMuteButton trackMuteButton;
         final TrackRecordButton trackRecordButton;
         final TrackVisualizerView trackVisualizerView;
-        ViewHolder(View rowView){
+        SongViewHolder(View rowView){
 
             trackMuteButton =
                     (TrackMuteButton) rowView.findViewById(R.id.track_mute_btn);
@@ -120,7 +120,6 @@ public class Studio extends Fragment {
                 textViewResourceId, TrackMessenger[] objects) {
             super(context, textViewResourceId, objects);
             this.layoutInflater = LayoutInflater.from(context);
-
         }
 
         @Override
@@ -129,10 +128,11 @@ public class Studio extends Fragment {
             final View rowView = convertView != null ?
                     convertView :
                     layoutInflater.inflate(R.layout.list_view_track, null);
-            final ViewHolder viewHolder = convertView == null ?
-                    new ViewHolder(rowView) :
-                    (ViewHolder) rowView.getTag();
+            final SongViewHolder viewHolder = convertView == null ?
+                    new SongViewHolder(rowView) :
+                    (SongViewHolder) rowView.getTag();
             viewHolder.setListeners(getItem(position));
+            viewHolder.trackVisualizerView.setFocusable(true);
             return rowView;
             /*
             TrackLayout view;

@@ -42,7 +42,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     }
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(final SurfaceHolder holder) {
 
         trackView = new TrackView(holder);
         trackView.setBitmapCanvas(bitmapCanvas);

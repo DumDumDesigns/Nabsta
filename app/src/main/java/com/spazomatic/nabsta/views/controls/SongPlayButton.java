@@ -31,7 +31,6 @@ public class SongPlayButton extends Button implements View.OnClickListener,
             Message trackCompleteMessage = uiHandler.obtainMessage(
                     TRACKS_ALL_COMPLETE_STATE, this);
             trackCompleteMessage.sendToTarget();
-
         }
     }
 
@@ -41,34 +40,29 @@ public class SongPlayButton extends Button implements View.OnClickListener,
         uiHandler = new UIHandler(Looper.getMainLooper(),this);
     }
 
-   // public List<TrackMessenger> getTrackMessengerList() {
-       // return trackMessengerList;
-    //}
-
     public void setTrackMessengerList(TrackMessenger[] trackMessengerList) {
-
         this.trackMessengerList = trackMessengerList;
-
     }
 
     @Override
     public void onClick(View v) {
-        //Message trackCompleteMessage = uiHandler.obtainMessage(
-        //        PLAY_ALL_TRACKS, this);
-        //trackCompleteMessage.sendToTarget();
         playTracks();
-
     }
     private void playTracks() {
         if(!isSelected()){
             if(trackMessengerList != null) {
                 Log.d(NabstaApplication.LOG_TAG, String.format(
                         "Playing %d tracks", trackMessengerList.length));
+                Thread[] trackThreads = new Thread[trackMessengerList.length];
+                int i = 0;
                 for (TrackMessenger trackMessenger : trackMessengerList) {
                     trackMessenger.setTrackCompleteListener(this);
-                    Thread trackThread = new Thread(trackMessenger);
-                    trackThread.start();
+                    trackThreads[i++] = new Thread(trackMessenger);
                 }
+                for (i = 0; i < trackMessengerList.length; i++) {
+                    trackThreads[i].start();
+                }
+
             }
             setSelected(true);
         }else{
