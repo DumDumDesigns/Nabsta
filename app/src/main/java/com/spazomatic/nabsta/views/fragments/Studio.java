@@ -66,10 +66,7 @@ public class Studio extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.e(NabstaApplication.LOG_TAG, "studio fragment onCreateView called");
-        View studioView = inflater.inflate(R.layout.fragment_studio, container, false);
-
-
+        View studioView = inflater.inflate(R.layout.fragment_studio, null);
         return studioView;
     }
 

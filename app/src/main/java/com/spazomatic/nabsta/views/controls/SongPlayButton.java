@@ -46,9 +46,14 @@ public class SongPlayButton extends Button implements View.OnClickListener,
 
     @Override
     public void onClick(View v) {
-        playTracks();
+        try{
+            playTracks();
+        }catch(IllegalThreadStateException e){
+            Log.e(NabstaApplication.LOG_TAG,String.format(
+                    "Error with TrackMessenger thread %s",e.getMessage()),e);
+        }
     }
-    private void playTracks() {
+    private void playTracks() throws IllegalThreadStateException {
         if(!isSelected()){
             if(trackMessengerList != null) {
                 Log.d(NabstaApplication.LOG_TAG, String.format(

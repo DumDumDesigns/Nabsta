@@ -1,8 +1,6 @@
 package com.spazomatic.nabsta;
 
 import android.app.Application;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.Log;
@@ -14,6 +12,7 @@ import com.spazomatic.nabsta.db.dao.DaoSession;
 import com.spazomatic.nabsta.tasks.CreateSongTask;
 import com.spazomatic.nabsta.tasks.LoadSongTask;
 import com.spazomatic.nabsta.tasks.LoadSongsTask;
+import com.spazomatic.nabsta.utils.SharedPrefUtil;
 
 import java.io.File;
 import java.util.List;
@@ -75,35 +74,43 @@ public class NabstaApplication extends Application{
         LoadSongsTask loadSongsTask = new LoadSongsTask();
         loadSongsTask.execute();
         List<Song> songs = null;
-        SharedPreferences sharedPreferences = getSharedPreferences(
-                NabstaApplication.NABSTA_SHARED_PREFERENCES,Context.MODE_PRIVATE);
+
         try {
             songs = loadSongsTask.get();
             if(songs == null || songs.isEmpty()){
                 Song exampleSong = createSong("Example Project","Example Artist");
                 if(exampleSong != null) {
-                    this.setSongInSession(exampleSong);
-                    final SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, exampleSong.getId());
-                    editor.commit();
-                }
+                    setSongToPrefAndSession(exampleSong);
+                 }
             }else{
-                Long songId = sharedPreferences.getLong(
-                        NabstaApplication.NABSTA_CURRENT_PROJECT_ID,0);
-                LoadSongTask loadSongTask = new LoadSongTask();
-                loadSongTask.execute(songId);
-                try {
-                    Song currentSOng = loadSongTask.get();
-                    this.setSongInSession(currentSOng);
-                } catch (InterruptedException | ExecutionException e) {
-                    Log.e(NabstaApplication.LOG_TAG, "Error loading song", e);
-                }
+                Song currentSOng = getSongFromPref();
+                this.setSongInSession(currentSOng);
             }
         } catch (InterruptedException | ExecutionException e) {
-            Log.e(NabstaApplication.LOG_TAG,"Error loading songs",e);
+            Log.e(LOG_TAG,"Error loading songs",e);
         }
     }
 
+    private void setSongToPrefAndSession(Song song) {
+        this.songInSession = song;
+        SharedPrefUtil.setLongValue(getApplicationContext(),
+                NABSTA_CURRENT_PROJECT_ID,song.getId());
+
+    }
+
+    private Song getSongFromPref(){
+        Song currentSong =  null;
+        Long songId = SharedPrefUtil.getLongValue(getApplicationContext(),
+                NABSTA_CURRENT_PROJECT_ID);
+        LoadSongTask loadSongTask = new LoadSongTask();
+        loadSongTask.execute(songId);
+        try {
+            currentSong = loadSongTask.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "Error loading song", e);
+        }
+        return currentSong;
+    }
     private void setupDataBase() {
         DataBaseOpenHelper helper = DataBaseOpenHelper.getInstance(this);
         SQLiteDatabase db = helper.getWritableDatabase();
@@ -118,7 +125,7 @@ public class NabstaApplication extends Application{
             Song song = createSongTask.get();
             return song;
         }catch(Exception e){
-            Log.e(NabstaApplication.LOG_TAG,"Error Saving to Database",e);
+            Log.e(LOG_TAG,"Error Saving to Database",e);
         }
         return null;
     }
@@ -131,11 +138,14 @@ public class NabstaApplication extends Application{
     }
 
     public  Song getSongInSession() {
+        if(songInSession == null){
+            songInSession = getSongFromPref();
+        }
         return songInSession;
     }
 
     public  void setSongInSession(Song songInSession) {
-        this.songInSession = songInSession;
+        setSongToPrefAndSession(songInSession);
     }
 
     public static boolean isActivityVisible() {

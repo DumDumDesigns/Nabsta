@@ -59,7 +59,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                 "TrackMessenger created %d threads",++threadCount));
     }
 
-
     @Override
     public void run() {
 
@@ -103,9 +102,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                     numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT) {
                 Log.e(NabstaApplication.LOG_TAG, "Error Writing bytes to Mix Track");
             }
-            Log.d(NabstaApplication.LOG_TAG, String.format(
-                    "Wrote %d bytes to Track %s.", numberOfBytesWritten, track.getFile_name()
-            ));
         }finally {
             stopTrack(false);
         }
@@ -113,37 +109,13 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
 
     }
 
-
-
-    private void recordTrack() throws IOException{
+    private void recordTrack() throws IOException {
         File file = new File(track.getFile_name());
-/*
-        if (file.exists()) {
-            if(!file.delete()){
-                //TODO:Propagate Unexpected Errors such as these to end user.
-                Log.e(NabstaApplication.LOG_TAG,String.format(
-                        "Error Deleting File %s Cancelling Record...",
-                        file.getAbsolutePath()));
-            }
-        }
-
-        if(!file.createNewFile()){
-            //TODO:Propagate Unexpected Errors such as these to end user.
-            Log.e(NabstaApplication.LOG_TAG,String.format(
-                    "Error Creating File %s Cancelling Record...",
-                    file.getAbsolutePath()));
-        }
-*/
-
         Log.d(LOG_TAG,String.format("----------RECORD TRACk %s-------------", track.getName()));
         OutputStream os = new FileOutputStream(file);
         BufferedOutputStream bos = new BufferedOutputStream(os);
         DataOutputStream dos = new DataOutputStream(bos);
         try {
-            Log.d(NabstaApplication.LOG_TAG,String.format(
-                    "Begin Recording File: %s",
-                    file.getAbsolutePath()));
-
              audioRecord = new AudioRecord(
                      MediaRecorder.AudioSource.MIC,
                      FREQUENCY,
@@ -161,8 +133,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
 
             callListenersTrackBegin(audioTrack.getAudioSessionId(), true);
             byte[] buffer = new byte[MIN_BUFF_SIZE];
-            Log.d(LOG_TAG, String.format("--------------RECORD STATE: %s ---------------", audioRecord.getState()));
-
             audioRecord.startRecording();
             audioTrack.play();
 
@@ -175,8 +145,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                 playWithAudioTrack(buffer, audioTrack);
             }
 
-            Log.d(NabstaApplication.LOG_TAG, String.format(
-                    "Finish Recording File %s", file.getAbsolutePath()));
         } catch (Exception e) {
             Log.e(NabstaApplication.LOG_TAG, String.format(
                     "Error Recording File %s",file.getAbsolutePath()), e);
@@ -201,8 +169,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
         Log.d(LOG_TAG,String.format("----------END RECORD TRACk %s-------------", track.getName()));
     }
 
-
-
     private void playWithAudioTrack(byte[] buffer, AudioTrack audioTrack){
 
         int numberOfBytesWritten = audioTrack.write(buffer, 0, MIN_BUFF_SIZE);
@@ -213,8 +179,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
         }
 
     }
-
-
 
     private byte[] convertStreamToByteArray(String musacFile) {
         byte [] soundBytes = null;
@@ -295,7 +259,6 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                 numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
                 numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT){
             Log.e(NabstaApplication.LOG_TAG, "Error Writing bytes to Mix Track");
-
         }
         stopTrack(true);
 

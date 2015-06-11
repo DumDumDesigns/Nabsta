@@ -37,8 +37,7 @@ public class MainActivity extends ActionBarActivity implements
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
         Log.d(NabstaApplication.LOG_TAG, "mainActivity onCreate called");
-        //AudioManager audioManager = (AudioManager)getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
-        //Hardware buttons setting to adjust the media
+
         setContentView(R.layout.activity_main);
         this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
         sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
@@ -113,18 +112,11 @@ public class MainActivity extends ActionBarActivity implements
 
     @Override
     public void onNewSong(Song song) {
-        saveSongToSharedPreferences(song);
         openSong(song);
     }
 
-    private void saveSongToSharedPreferences(Song song){
-        final SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putLong(NabstaApplication.NABSTA_CURRENT_PROJECT_ID, song.getId());
-        editor.commit();
-    }
     @Override
     public void onOpenSong(Song song) {
-        saveSongToSharedPreferences(song);
         openSong(song);
     }
     private void openSong(Song song){
@@ -136,6 +128,8 @@ public class MainActivity extends ActionBarActivity implements
             MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
             currentSongMenuItem.setTitle(song.getName());
         }
+
+
         Log.d(NabstaApplication.LOG_TAG, String.format(
                 "Opening Studio with song id %d", song.getId()));
         FragmentManager fragmentManager = getSupportFragmentManager();

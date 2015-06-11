@@ -13,6 +13,7 @@ import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.tasks.AddTrackTask;
+import com.spazomatic.nabsta.tasks.MixTracksTask;
 import com.spazomatic.nabsta.views.fragments.DeleteTracksDialog;
 
 import java.util.concurrent.ExecutionException;
@@ -22,9 +23,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class CurrentSongActionProvider extends ActionProvider {
 
-    private Context context;
-    private MenuItem addTrackMenuItem;
-    private MenuItem deleteTrackMenuItem;
+
     public static final String SONG_ID = "songId";
     private OnAddTrackListener resetStudioFragment;
 
@@ -38,7 +37,6 @@ public class CurrentSongActionProvider extends ActionProvider {
      */
     public CurrentSongActionProvider(Context context) {
         super(context);
-        this.context = context;
         Log.d(NabstaApplication.LOG_TAG, "CurrentSong ActionProvider onCreateActionView");
         resetStudioFragment = (OnAddTrackListener)((ContextThemeWrapper)context).getBaseContext();
     }
@@ -52,7 +50,7 @@ public class CurrentSongActionProvider extends ActionProvider {
     public void onPrepareSubMenu(SubMenu subMenu) {
         subMenu.clear();
 
-        addTrackMenuItem = subMenu.add(R.string.add_track);
+        MenuItem addTrackMenuItem = subMenu.add(R.string.add_track);
         addTrackMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -61,7 +59,7 @@ public class CurrentSongActionProvider extends ActionProvider {
             }
         });
 
-        deleteTrackMenuItem = subMenu.add(R.string.delete_track);
+        MenuItem deleteTrackMenuItem = subMenu.add(R.string.delete_track);
         deleteTrackMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -69,12 +67,23 @@ public class CurrentSongActionProvider extends ActionProvider {
                 return true;
             }
         });
+
+        MenuItem mixTracks = subMenu.add(R.string.mix_tracks_to_master);
+        mixTracks.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                mixTracksItemClick();
+                return true;
+            }
+        });
     }
 
+
+
     private void deleteTrackMenuItemClick() {
-        Activity activity = (Activity)((ContextThemeWrapper)context).getBaseContext();
+        Activity activity = (Activity)((ContextThemeWrapper)getContext()).getBaseContext();
         DeleteTracksDialog manageProjectsDialog = new DeleteTracksDialog();
-        manageProjectsDialog.show(activity.getFragmentManager(),"DeleteTracksDialog");
+        manageProjectsDialog.show(activity.getFragmentManager(), "DeleteTracksDialog");
     }
 
     private void addTrackMenuItemClick(){
@@ -87,7 +96,16 @@ public class CurrentSongActionProvider extends ActionProvider {
             Log.e(NabstaApplication.LOG_TAG,String.format(
                     "Error adding track with Error Message %s",e.getMessage()),e);
         }
+        if(resetStudioFragment == null){
+            resetStudioFragment = (OnAddTrackListener)(
+                    (ContextThemeWrapper)getContext()).getBaseContext();
+        }
         resetStudioFragment.onAddTrack(song);
+    }
+
+    private void mixTracksItemClick() {
+        MixTracksTask mixTracksTask = new MixTracksTask();
+        mixTracksTask.execute();
     }
     @Override
     public boolean onPerformDefaultAction() {
@@ -99,6 +117,7 @@ public class CurrentSongActionProvider extends ActionProvider {
     public boolean hasSubMenu() {
         return true;
     }
+
 
 
 }
