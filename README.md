@@ -7,7 +7,7 @@ Below is a screenshot as of 6/4/2015.
 
 ![](https://github.com/samuelsegal/Nabsta/blob/master/nabsta_6_5_15_screenshot.png)
 
-Note: Currently it is required to use headphones to avoid echo from speakers top microphone. Though without headphones an effect is created that may be appealing to some. 
+Note: Currently it is required to use headphones to avoid echo from speakers to microphone. Though without headphones an effect is created that may be appealing to some. 
 
 Currently there is a noticable delay in record mode. This will be fixed.
 
