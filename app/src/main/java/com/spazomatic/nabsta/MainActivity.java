@@ -14,9 +14,11 @@ import android.view.MenuItem;
 import android.view.WindowManager;
 
 import com.spazomatic.nabsta.db.Song;
+import com.spazomatic.nabsta.db.Track;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
 import com.spazomatic.nabsta.views.actionBar.CurrentSongActionProvider;
 import com.spazomatic.nabsta.views.fragments.DeleteTracksDialog;
+import com.spazomatic.nabsta.views.fragments.MixMasterTrackDialog;
 import com.spazomatic.nabsta.views.fragments.NewProjectDialog;
 import com.spazomatic.nabsta.views.fragments.OpenProjectDialog;
 import com.spazomatic.nabsta.views.fragments.Studio;
@@ -25,7 +27,8 @@ public class MainActivity extends ActionBarActivity implements
         NewProjectDialog.OnNewSongListener,
         OpenProjectDialog.OnOpenSongListener,
         CurrentSongActionProvider.OnAddTrackListener,
-        DeleteTracksDialog.OnDeleteTracksListener {
+        DeleteTracksDialog.OnDeleteTracksListener,
+        MixMasterTrackDialog.OnMasterTrackCreatedListener{
 
     private BatteryLevelReceiver batteryLevelReceiver;
     private IntentFilter batteryChanged;
@@ -149,4 +152,8 @@ public class MainActivity extends ActionBarActivity implements
         openSong(song);
     }
 
+    @Override
+    public void onMasterTrackCreated(Track masterTrack) {
+        //TODO: Add Master Track to UI
+    }
 }

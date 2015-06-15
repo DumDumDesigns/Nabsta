@@ -13,8 +13,8 @@ import com.spazomatic.nabsta.NabstaApplication;
 import com.spazomatic.nabsta.R;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.tasks.AddTrackTask;
-import com.spazomatic.nabsta.tasks.MixTracksTask;
 import com.spazomatic.nabsta.views.fragments.DeleteTracksDialog;
+import com.spazomatic.nabsta.views.fragments.MixMasterTrackDialog;
 
 import java.util.concurrent.ExecutionException;
 
@@ -104,8 +104,10 @@ public class CurrentSongActionProvider extends ActionProvider {
     }
 
     private void mixTracksItemClick() {
-        MixTracksTask mixTracksTask = new MixTracksTask();
-        mixTracksTask.execute();
+        Activity activity = (Activity)((ContextThemeWrapper)getContext()).getBaseContext();
+        MixMasterTrackDialog mixMasterTrackDialog = new MixMasterTrackDialog();
+        mixMasterTrackDialog.show(activity.getFragmentManager(), "MixMasterTrackDialog");
+
     }
     @Override
     public boolean onPerformDefaultAction() {

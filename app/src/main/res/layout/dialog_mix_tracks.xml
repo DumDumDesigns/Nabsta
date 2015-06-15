@@ -1,0 +1,41 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <ImageView
+        android:src="@drawable/ic_launcher"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:scaleType="center"
+        android:background="@android:color/holo_orange_light"
+        android:contentDescription="@string/app_name" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="1">
+        <EditText
+            android:id="@+id/master_track_name"
+            android:layout_width="0dp"
+            android:layout_weight=".7"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            android:hint="@string/project_name" />
+        <Button
+            android:id="@+id/mixTracksBtn"
+            android:layout_weight=".3"
+            android:text="@string/mix_track"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+    <ProgressBar
+        android:id="@+id/mixTrackProgressBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_marginRight="5dp" />
+</LinearLayout>

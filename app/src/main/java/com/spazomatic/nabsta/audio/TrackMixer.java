@@ -33,7 +33,7 @@ public class TrackMixer {
         this.tracks = tracks;
     }
 
-    public void mixTracks() throws IOException{
+    public File mixTracks() throws IOException{
 
         byte[][] tracksBytes = new byte[tracks.length][];
 
@@ -76,7 +76,7 @@ public class TrackMixer {
         fos.flush();
         fos.close();
         Log.d(LOG_TAG, String.format("Created Master track %s", masterTrack.getAbsolutePath()));
-
+        return masterTrack;
     }
 
     private byte[] convertStreamToByteArray(String musacFile) {
