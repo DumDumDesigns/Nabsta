@@ -141,7 +141,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
                 for (int i = 0; i < bufferReadResult; i++) {
                     dos.writeByte(buffer[i]);
                 }
-                //TODO: Learn DSP to create own record visualizer in order to remove this hack of playing back recorded buffer for visualizer capability
+
                 playWithAudioTrack(buffer, audioTrack);
             }
 
