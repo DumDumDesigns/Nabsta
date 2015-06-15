@@ -35,7 +35,7 @@ public class NewProjectDialog extends DialogFragment{
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        View dialogView = inflater.inflate(R.layout.dialog_new_project, null);
+        View dialogView = inflater.inflate(R.layout.dialog_new_project_song, null);
         final EditText projectName =  (EditText)dialogView.findViewById(R.id.project_name);
         final EditText artistName =  (EditText)dialogView.findViewById(R.id.artist_name);
         builder.setView(dialogView)
