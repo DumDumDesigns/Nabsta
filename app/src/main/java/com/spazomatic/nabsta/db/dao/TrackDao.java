@@ -35,9 +35,10 @@ public class TrackDao extends AbstractDao<Track, Long> {
         public final static Property Name = new Property(1, String.class, "name", false, "NAME");
         public final static Property File_name = new Property(2, String.class, "file_name", false, "FILE_NAME");
         public final static Property Bitmap_file_name = new Property(3, String.class, "bitmap_file_name", false, "BITMAP_FILE_NAME");
-        public final static Property Song_id_fk = new Property(4, Long.class, "song_id_fk", false, "SONG_ID_FK");
-        public final static Property Artist_id_fk = new Property(5, Long.class, "artist_id_fk", false, "ARTIST_ID_FK");
-        public final static Property Image_id_fk = new Property(6, Long.class, "image_id_fk", false, "IMAGE_ID_FK");
+        public final static Property Is_mixed_track = new Property(4, Long.class, "is_mixed_track", false, "IS_MIXED_TRACK");
+        public final static Property Song_id_fk = new Property(5, Long.class, "song_id_fk", false, "SONG_ID_FK");
+        public final static Property Artist_id_fk = new Property(6, Long.class, "artist_id_fk", false, "ARTIST_ID_FK");
+        public final static Property Image_id_fk = new Property(7, Long.class, "image_id_fk", false, "IMAGE_ID_FK");
     };
 
     private DaoSession daoSession;
@@ -62,9 +63,10 @@ public class TrackDao extends AbstractDao<Track, Long> {
                 "'NAME' TEXT," + // 1: name
                 "'FILE_NAME' TEXT," + // 2: file_name
                 "'BITMAP_FILE_NAME' TEXT," + // 3: bitmap_file_name
-                "'SONG_ID_FK' INTEGER," + // 4: song_id_fk
-                "'ARTIST_ID_FK' INTEGER," + // 5: artist_id_fk
-                "'IMAGE_ID_FK' INTEGER);"); // 6: image_id_fk
+                "'IS_MIXED_TRACK' INTEGER," + // 4: is_mixed_track
+                "'SONG_ID_FK' INTEGER," + // 5: song_id_fk
+                "'ARTIST_ID_FK' INTEGER," + // 6: artist_id_fk
+                "'IMAGE_ID_FK' INTEGER);"); // 7: image_id_fk
     }
 
     /** Drops the underlying database table. */
@@ -98,19 +100,24 @@ public class TrackDao extends AbstractDao<Track, Long> {
             stmt.bindString(4, bitmap_file_name);
         }
  
+        Long is_mixed_track = entity.getIs_mixed_track();
+        if (is_mixed_track != null) {
+            stmt.bindLong(5, is_mixed_track);
+        }
+ 
         Long song_id_fk = entity.getSong_id_fk();
         if (song_id_fk != null) {
-            stmt.bindLong(5, song_id_fk);
+            stmt.bindLong(6, song_id_fk);
         }
  
         Long artist_id_fk = entity.getArtist_id_fk();
         if (artist_id_fk != null) {
-            stmt.bindLong(6, artist_id_fk);
+            stmt.bindLong(7, artist_id_fk);
         }
  
         Long image_id_fk = entity.getImage_id_fk();
         if (image_id_fk != null) {
-            stmt.bindLong(7, image_id_fk);
+            stmt.bindLong(8, image_id_fk);
         }
     }
 
@@ -134,9 +141,10 @@ public class TrackDao extends AbstractDao<Track, Long> {
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // name
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // file_name
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // bitmap_file_name
-            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // song_id_fk
-            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5), // artist_id_fk
-            cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6) // image_id_fk
+            cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4), // is_mixed_track
+            cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5), // song_id_fk
+            cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6), // artist_id_fk
+            cursor.isNull(offset + 7) ? null : cursor.getLong(offset + 7) // image_id_fk
         );
         return entity;
     }
@@ -148,9 +156,10 @@ public class TrackDao extends AbstractDao<Track, Long> {
         entity.setName(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setFile_name(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setBitmap_file_name(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setSong_id_fk(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
-        entity.setArtist_id_fk(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
-        entity.setImage_id_fk(cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6));
+        entity.setIs_mixed_track(cursor.isNull(offset + 4) ? null : cursor.getLong(offset + 4));
+        entity.setSong_id_fk(cursor.isNull(offset + 5) ? null : cursor.getLong(offset + 5));
+        entity.setArtist_id_fk(cursor.isNull(offset + 6) ? null : cursor.getLong(offset + 6));
+        entity.setImage_id_fk(cursor.isNull(offset + 7) ? null : cursor.getLong(offset + 7));
      }
     
     /** @inheritdoc */

@@ -17,6 +17,7 @@ public class Track {
     private String name;
     private String file_name;
     private String bitmap_file_name;
+    private Long is_mixed_track;
     private Long song_id_fk;
     private Long artist_id_fk;
     private Long image_id_fk;
@@ -41,11 +42,12 @@ public class Track {
         this.id = id;
     }
 
-    public Track(Long id, String name, String file_name, String bitmap_file_name, Long song_id_fk, Long artist_id_fk, Long image_id_fk) {
+    public Track(Long id, String name, String file_name, String bitmap_file_name, Long is_mixed_track, Long song_id_fk, Long artist_id_fk, Long image_id_fk) {
         this.id = id;
         this.name = name;
         this.file_name = file_name;
         this.bitmap_file_name = bitmap_file_name;
+        this.is_mixed_track = is_mixed_track;
         this.song_id_fk = song_id_fk;
         this.artist_id_fk = artist_id_fk;
         this.image_id_fk = image_id_fk;
@@ -87,6 +89,14 @@ public class Track {
 
     public void setBitmap_file_name(String bitmap_file_name) {
         this.bitmap_file_name = bitmap_file_name;
+    }
+
+    public Long getIs_mixed_track() {
+        return is_mixed_track;
+    }
+
+    public void setIs_mixed_track(Long is_mixed_track) {
+        this.is_mixed_track = is_mixed_track;
     }
 
     public Long getSong_id_fk() {

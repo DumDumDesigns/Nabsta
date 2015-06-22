@@ -56,7 +56,7 @@ public class MixTracksTask extends AsyncTask<String,Integer,Track> {
     @Override
     protected void onPostExecute(Track track) {
         super.onPostExecute(track);
-        publishProgress(100);
+        progressBar.setProgress(100);
     }
 
     @Override

@@ -1,9 +1,7 @@
 package com.spazomatic.nabsta;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -16,6 +14,7 @@ import android.view.WindowManager;
 import com.spazomatic.nabsta.db.Song;
 import com.spazomatic.nabsta.db.Track;
 import com.spazomatic.nabsta.receivers.BatteryLevelReceiver;
+import com.spazomatic.nabsta.utils.SharedPrefUtil;
 import com.spazomatic.nabsta.views.actionBar.CurrentSongActionProvider;
 import com.spazomatic.nabsta.views.fragments.DeleteTracksDialog;
 import com.spazomatic.nabsta.views.fragments.MixMasterTrackDialog;
@@ -28,32 +27,26 @@ public class MainActivity extends ActionBarActivity implements
         OpenProjectDialog.OnOpenSongListener,
         CurrentSongActionProvider.OnAddTrackListener,
         DeleteTracksDialog.OnDeleteTracksListener,
-        MixMasterTrackDialog.OnMasterTrackCreatedListener{
+        MixMasterTrackDialog.OnMasterTrackCreatedListener {
 
     private BatteryLevelReceiver batteryLevelReceiver;
     private IntentFilter batteryChanged;
-    private SharedPreferences sharedPreferences;
     private Menu nabstaMenu;
     private Studio studioFragment;
 
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        Log.d(NabstaApplication.LOG_TAG, "mainActivity onCreate called");
-
         setContentView(R.layout.activity_main);
-        this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        sharedPreferences = getSharedPreferences(NabstaApplication.NABSTA_SHARED_PREFERENCES,
-                Context.MODE_PRIVATE);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
         checkPrefs();
-
         batteryLevelReceiver = new BatteryLevelReceiver();
         batteryChanged = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     }
 
     private void checkPrefs() {
-        if(sharedPreferences.contains(NabstaApplication.NABSTA_KEEP_SCREEN_ON)){
-            if(sharedPreferences.getBoolean(NabstaApplication.NABSTA_KEEP_SCREEN_ON,true)) {
+        if(SharedPrefUtil.containsKey(this, NabstaApplication.NABSTA_KEEP_SCREEN_ON)){
+            if(SharedPrefUtil.getBooleanValue(this,NabstaApplication.NABSTA_KEEP_SCREEN_ON,false)) {
                 Log.d(NabstaApplication.LOG_TAG,String.format("Keep Screen on: %b",true));
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             }else{
@@ -90,16 +83,17 @@ public class MainActivity extends ActionBarActivity implements
     protected void onResume() {
         super.onResume();
         Log.d(NabstaApplication.LOG_TAG, "MainActivity onResume called...");
+        studioFragment = null;
         NabstaApplication.activityResumed();
         //TODO Think of best solution for battery monitoring when has most all features developed.
         Log.d(NabstaApplication.LOG_TAG, "Register Batter receiver dynamically...");
         registerReceiver(batteryLevelReceiver, batteryChanged);
-        studioFragment = null;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        studioFragment = null;
         Log.d(NabstaApplication.LOG_TAG, "MainActivity onPause called...");
         NabstaApplication.activityPaused();
         Log.d(NabstaApplication.LOG_TAG, "UnRegister Batter receiver dynamically...");
@@ -116,17 +110,13 @@ public class MainActivity extends ActionBarActivity implements
         openSong(song);
     }
     private void openSong(Song song){
-        Log.d(NabstaApplication.LOG_TAG, String.format(
-                "----------Opening Project %s------------",
-                song.getName()));
         NabstaApplication.getInstance().setSongInSession(song);
         if(nabstaMenu != null) {
             MenuItem currentSongMenuItem = nabstaMenu.findItem(R.id.action_current_song);
             currentSongMenuItem.setTitle(song.getName());
         }
-
         Log.d(NabstaApplication.LOG_TAG, String.format(
-                "Opening Studio with song id %d", song.getId()));
+                "Opening Studio with song %s", song.getName()));
         FragmentManager fragmentManager = getSupportFragmentManager();
         studioFragment = null;
         studioFragment = (Studio)fragmentManager.findFragmentById(R.id.studioFragment);
