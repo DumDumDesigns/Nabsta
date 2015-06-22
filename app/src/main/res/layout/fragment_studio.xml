@@ -16,7 +16,6 @@
         android:id="@+id/list_view_tracks"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="1dp"
         android:layout_weight="1"/>
 
         <LinearLayout

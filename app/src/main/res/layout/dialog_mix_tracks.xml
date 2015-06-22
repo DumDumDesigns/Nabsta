@@ -23,7 +23,7 @@
             android:layout_marginLeft="4dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="4dp"
-            android:hint="@string/project_name" />
+            android:hint="@string/master_track_name" />
         <Button
             android:id="@+id/mixTracksBtn"
             android:layout_weight=".3"

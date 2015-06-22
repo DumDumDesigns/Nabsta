@@ -7,7 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 
 import com.spazomatic.nabsta.NabstaApplication;
@@ -31,7 +31,6 @@ public class Studio extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(NabstaApplication.LOG_TAG, "studio fragment onCreate called");
     }
 
     private TrackMessenger[] createTrackMessengerList(Song song) {
@@ -76,14 +75,13 @@ public class Studio extends Fragment {
         final ListView trackListView =
             (ListView) studioView.findViewById(R.id.list_view_tracks);
 
-        final TrackListAdapter songAdapter = new
-                TrackListAdapter(getActivity(), R.id.list_view_tracks,
-                trackMessengerList);
+        final TrackListAdapter songAdapter = new TrackListAdapter(
+                getActivity(), trackMessengerList);
         trackListView.setAdapter(songAdapter);
-
         final SongPlayButton songPlayButton =
                 (SongPlayButton)studioView.findViewById(R.id.songPlayBtn);
         songPlayButton.setTrackMessengerList(trackMessengerList);
+
     }
 
     private static class SongViewHolder {
@@ -102,26 +100,24 @@ public class Studio extends Fragment {
             rowView.setTag(this);
         }
         void setListeners(TrackMessenger trackMessenger){
-            Log.d(NabstaApplication.LOG_TAG,"setting listeners");
             trackMessenger.setTrackStatusListener(trackVisualizerView);
             trackMuteButton.setOnMuteTrackListener(trackMessenger);
             trackRecordButton.setOnRecordTrackListener(trackMessenger);
         }
     }
 
-    private class TrackListAdapter extends ArrayAdapter<TrackMessenger> {
+    private class TrackListAdapter extends BaseAdapter {
 
         private LayoutInflater layoutInflater;
-
-        public TrackListAdapter(Context context, int
-                textViewResourceId, TrackMessenger[] objects) {
-            super(context, textViewResourceId, objects);
+        private TrackMessenger[] trackMessengers;
+        public TrackListAdapter(Context context, TrackMessenger[] objects) {
+            //super(context, objects);
             this.layoutInflater = LayoutInflater.from(context);
+            trackMessengers = objects;
         }
 
         @Override
         public View getView(final int position, final View convertView, final ViewGroup parent) {
-
             final View rowView = convertView != null ?
                     convertView :
                     layoutInflater.inflate(R.layout.list_view_track, null);
@@ -129,7 +125,7 @@ public class Studio extends Fragment {
                     new SongViewHolder(rowView) :
                     (SongViewHolder) rowView.getTag();
             viewHolder.setListeners(getItem(position));
-            viewHolder.trackVisualizerView.setFocusable(true);
+
             return rowView;
             /*
             TrackLayout view;
@@ -144,6 +140,21 @@ public class Studio extends Fragment {
             return view;
             */
         }
+        @Override
+        public int getCount() {
+            return trackMessengers.length;
+        }
+
+        @Override
+        public TrackMessenger getItem(int position) {
+            return trackMessengers[position];
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
 
     }
 }

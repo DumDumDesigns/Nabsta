@@ -34,7 +34,7 @@ public class MainActivity extends ActionBarActivity implements
     private IntentFilter batteryChanged;
     private SharedPreferences sharedPreferences;
     private Menu nabstaMenu;
-
+    private Studio studioFragment;
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -78,8 +78,7 @@ public class MainActivity extends ActionBarActivity implements
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if(hasWindowFocus()){
-            //TODO:Fix this hack. only way track renderer is alive seems by waiting till this state to open trackViewVisualizers. This is an unacceptable hack
+        if(hasWindowFocus() && studioFragment == null){
             Song currentSong = NabstaApplication.getInstance().getSongInSession();
             if(currentSong != null){
                 openSong(currentSong);
@@ -95,13 +94,7 @@ public class MainActivity extends ActionBarActivity implements
         //TODO Think of best solution for battery monitoring when has most all features developed.
         Log.d(NabstaApplication.LOG_TAG, "Register Batter receiver dynamically...");
         registerReceiver(batteryLevelReceiver, batteryChanged);
-
-        //TODO: Fix this hack: similar to onWindowFocusChangedHack, this keeps tracks alive
-        //when screen turns off.
-        Song currentSong = NabstaApplication.getInstance().getSongInSession();
-        if(currentSong != null){
-            openSong(currentSong);
-        }
+        studioFragment = null;
     }
 
     @Override
@@ -132,12 +125,11 @@ public class MainActivity extends ActionBarActivity implements
             currentSongMenuItem.setTitle(song.getName());
         }
 
-
         Log.d(NabstaApplication.LOG_TAG, String.format(
                 "Opening Studio with song id %d", song.getId()));
         FragmentManager fragmentManager = getSupportFragmentManager();
-        Studio studioFragment = (Studio)fragmentManager.findFragmentById(R.id.studioFragment);
-
+        studioFragment = null;
+        studioFragment = (Studio)fragmentManager.findFragmentById(R.id.studioFragment);
         studioFragment.setProject(song);
     }
 

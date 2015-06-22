@@ -47,6 +47,7 @@
     <string name="mix_tracks_to_master">Mix Tracks to Master</string>
     <string name="mix_track">Mix</string>
     <string name="save_as_master_track">Save as Master Track</string>
+    <string name="master_track_name">Master Track Name</string>
 
 
 </resources>

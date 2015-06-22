@@ -69,9 +69,9 @@ public class TrackMixer {
         }
         FileOutputStream fos = new FileOutputStream(masterTrack);
 
-        WaveHeader mwh = new WaveHeader( WaveHeader.FORMAT_PCM, (short) 1,
+        WaveHeader waveHeader = new WaveHeader( WaveHeader.FORMAT_PCM, (short) 1,
                 FREQUENCY, (short) 16, output.length);
-        mwh.write(fos);
+        waveHeader.write(fos);
         fos.write(output);
         fos.flush();
         fos.close();

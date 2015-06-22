@@ -38,15 +38,10 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
     public TrackVisualizerView(Context context, AttributeSet attrs) {
         super(context, attrs);
         getHolder().addCallback(this);
-        setVisibility(VISIBLE);
-        requestFocus();
-        requestFocus();
-        postInvalidate();
     }
 
     @Override
     public void surfaceCreated(final SurfaceHolder holder) {
-        Log.e(NabstaApplication.LOG_TAG,"SurfaceCreated" + isShown());
         trackView = new TrackView(holder);
         trackView.setBitmapCanvas(bitmapCanvas);
         trackView.setCanvasBitmap(canvasBitmap);
@@ -58,41 +53,24 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
             loadBitMap(canvas);
             holder.unlockCanvasAndPost(canvas);
         }
-
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        Log.e(NabstaApplication.LOG_TAG,"SurfaceChanged" + isShown());
+        //Log.e(NabstaApplication.LOG_TAG,"SurfaceChanged" + holder.getSurface().isValid());
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.e(NabstaApplication.LOG_TAG,"SurfaceDestroyed" + isShown());
         track = null;
         trackView = null;
         trackVisualizer = null;
+        bitmapCanvas = null;
+        canvasBitmap = null;
+        identityMatrix = null;
     }
 
     private void reset(){
-
-        Log.d(LOG_TAG, String.format("calling RESET track view null = %b", trackView == null));
-        Log.d(LOG_TAG, String.format("Is view Activated %b", isActivated()));
-        Log.d(LOG_TAG,String.format("Is view shown %b",isShown()));
-        Log.d(LOG_TAG,String.format("Is view enabled %b",isEnabled()));
-        Log.d(LOG_TAG,String.format("Is view dirty %b",isDirty()));
-        Log.d(LOG_TAG,String.format("Is view focusable %b",isFocusable()));
-        Log.d(LOG_TAG,String.format("Is view isHapticFeedbackEnabled %b",isHapticFeedbackEnabled()));
-        Log.d(LOG_TAG,String.format("Is view isAccessibilityFocused %b",isAccessibilityFocused()));
-        Log.d(LOG_TAG,String.format("Is view drawingCacheEnabled %b", isDrawingCacheEnabled()));
-        Log.d(LOG_TAG,String.format("Is view isAttachedToWindow %b",isAttachedToWindow()));
-        Log.d(LOG_TAG,String.format("Is view isHardwareAccelerated %b",isHardwareAccelerated()));
-        Log.d(LOG_TAG,String.format("Is view isClickable %b",isClickable()));
-        Log.d(LOG_TAG,String.format("Is view isDuplicateParentStateEnabled %b",isDuplicateParentStateEnabled()));
-        Log.d(LOG_TAG,String.format("Is view isSaveEnabled %b",isSaveEnabled()));
-        Log.d(LOG_TAG,String.format("Is view isImportantForAccessibility %b",isImportantForAccessibility()));
-        Log.d(LOG_TAG,String.format("Is view isSelected %b",isSelected()));
-        Log.d(LOG_TAG,String.format("Is view isInEditMode %b",isInEditMode()));
 
         if(trackView != null) {
             trackView.clearVisualizer();
@@ -103,13 +81,10 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-
         int w = MeasureSpec.getSize(widthMeasureSpec);
         int h = MeasureSpec.getSize(heightMeasureSpec);
-        //Log.d(LOG_TAG,String.format("ONMEASURE w: %d: h: %d",w,h));
         canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         bitmapCanvas = new Canvas();
-        bitmapCanvas.drawColor(Color.DKGRAY);
         bitmapCanvas.setBitmap(canvasBitmap);
         identityMatrix = new Matrix();
         setMeasuredDimension(w, h);
@@ -128,6 +103,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
                     "Error with track bitmap: Error Message %s",e.getMessage()),e);
         }
     }
+
     @Override
     public void loadTrackBitMap(Track track, boolean isDisplayWaveFormRealTime) {
         this.track = track;
@@ -136,6 +112,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
 
     @Override
     public void trackBegin(int audioSessionId) {
+        Log.e(LOG_TAG,"Track Begin thread : " + Thread.currentThread().getName());
         reset();
         trackVisualizer = new Visualizer(audioSessionId);
         //trackVisualizer.setEnabled(false);
@@ -152,6 +129,7 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
                     resultOfSetDataCapture));
         }
     }
+
     @Override
     public void trackComplete() {
         storeImage(canvasBitmap, track.getBitmap_file_name());
@@ -162,32 +140,26 @@ public class TrackVisualizerView extends SurfaceView implements SurfaceHolder.Ca
         }
     }
 
-    private void updateVisualizer(double[] fft) {
-        try {
-            trackView.draw(fft);
-        }catch(Exception e){
-            Log.e(LOG_TAG,"Error drawing trackView",e);
-        }
-    }
     private void updateVisualizer(byte[] waveform) {
         try {
             if(trackView != null) {
                 trackView.draw(waveform);
-            }else{
-                Log.e(LOG_TAG,"PRANK CALL!!!!! PRANK CALL!!!!!");
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error drawing trackView",e);
         }
     }
+
+
     @Override
-    public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+    public void onWaveFormDataCapture(
+            final Visualizer visualizer, final byte[] waveform, final int samplingRate) {
         updateVisualizer(waveform);
     }
 
     @Override
     public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
-
+        //not implemented
     }
 
     private void storeImage(Bitmap image,String bitmapFileName) {

@@ -220,49 +220,7 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
 
         return soundBytes;
     }
-    private void mixSound() {
 
-        audioTrack = new AudioTrack(
-                AudioManager.STREAM_MUSIC,
-                FREQUENCY,
-                AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-                MIN_BUFF_SIZE,
-                AudioTrack.MODE_STREAM);
-
-        byte[] track1 = convertStreamToByteArray(NabstaApplication.ALL_TRACKS[0]);
-
-        byte[] track2 = convertStreamToByteArray(NabstaApplication.ALL_TRACKS[1]);
-
-        byte[] output = new byte[track1.length];
-
-        audioTrack.play();
-
-        for(int i=0; i < output.length; i++){
-
-            float sampleFloat1 = track1.length > i ? track1[i] / 128.0f : 0.0f;
-            float sampleFloat2 = track2.length > i ? track2[i] / 128.0f : 0.0f;
-
-            float mixed = sampleFloat1 + sampleFloat2;
-            // reduce volume
-            mixed *= 0.8;
-            if (mixed > 1.0f) mixed = 1.0f;
-            if (mixed < -1.0f) mixed = -1.0f;
-
-            byte outputSample = (byte)(mixed * 128.0f);
-            output[i] = outputSample;
-
-        }
-
-        int numberOfBytesWritten = audioTrack.write(output, 0, output.length);
-        if(numberOfBytesWritten == AudioTrack.ERROR_INVALID_OPERATION ||
-                numberOfBytesWritten == AudioTrack.ERROR_BAD_VALUE ||
-                numberOfBytesWritten == AudioManager.ERROR_DEAD_OBJECT){
-            Log.e(NabstaApplication.LOG_TAG, "Error Writing bytes to Mix Track");
-        }
-        stopTrack(true);
-
-    }
     @Override
     public void onMuteTrackClicked(boolean isMuted) {
         this.isMuted = isMuted;
@@ -354,25 +312,22 @@ public class TrackMessenger implements Runnable, TrackMuteButton.OnMuteTrackList
         this.trackStatusListener = trackStatusListener;
         this.trackStatusListener.loadTrackBitMap(track, true);
     }
+
     private void callListenersTrackComplete(boolean isDisplayWaveFormRealTIme) {
         if(isDisplayWaveFormRealTIme) {
             trackStatusListener.trackComplete();
         }
         trackCompleteListener.onTrackFinished(decreaseTrackCount());
-
     }
+
     private void callListenersTrackBegin(int audioSessionId, boolean isDisplayWaveFormRealTIme) {
         increaseTrackCount();
         if(isDisplayWaveFormRealTIme) {
             trackStatusListener.trackBegin(audioSessionId);
         }
-
     }
 
     public void setTrackCompleteListener(TrackCompleteListener trackCompleteListener) {
         this.trackCompleteListener = trackCompleteListener;
     }
-
-
-
 }

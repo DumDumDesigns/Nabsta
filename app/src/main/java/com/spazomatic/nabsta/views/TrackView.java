@@ -3,6 +3,7 @@ package com.spazomatic.nabsta.views;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 /**
@@ -13,46 +14,35 @@ public class TrackView {
     private final static String LOG_TAG = String.format(
             "Nabsta: %s", TrackView.class.getSimpleName());
 
-    //TODO: SAve track state in either shared preferences or database
-    private SurfaceHolder surfaceHolder;
-
-    private Measure measure;
-
+    private final SurfaceHolder surfaceHolder;
+    private final Measure measure;
 
     public TrackView(SurfaceHolder holder) {
-
         this.surfaceHolder = holder;
-
         measure = new Measure();
-        measure.init();
-
     }
 
     public void draw(byte[] bytes) {
-        Canvas canvas = surfaceHolder.lockCanvas(measure.getBounds());
-        if (canvas != null) {
-            measure.updateVisualizer(bytes, canvas);
-            surfaceHolder.unlockCanvasAndPost(canvas);
-        }
-    }
-    public void draw(double[] bytes) {
-        Canvas canvas = surfaceHolder.lockCanvas(measure.getBounds());
-        if (canvas != null) {
-            measure.updateVisualizer(bytes, canvas);
-            surfaceHolder.unlockCanvasAndPost(canvas);
+        try {
+            Canvas canvas = surfaceHolder.lockCanvas(measure.getBounds());
+            if (canvas != null) {
+                measure.updateVisualizer(bytes, canvas);
+                surfaceHolder.unlockCanvasAndPost(canvas);
+            }
+        }catch(Exception e){
+            Log.e(LOG_TAG,String.format("ERROR in TRACK VIEW DRAW %s",e.getMessage()),e);
         }
     }
 
     public void clearVisualizer() {
         Canvas canvas = surfaceHolder.lockCanvas();
         if (canvas != null) {
-            measure.clearVisualizer( canvas);
+            measure.clearVisualizer(canvas);
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
-
     }
     public void setBitmapCanvas(Canvas bitmapCanvas) {
-        measure.setBitmapCanvas( bitmapCanvas);
+        measure.setBitmapCanvas(bitmapCanvas);
     }
 
     public void setCanvasBitmap(Bitmap canvasBitmap) {

@@ -35,17 +35,15 @@ public class NabstaApplication extends Application{
     private Song songInSession;
     private DaoSession daoSession;
 
-
     public static NabstaApplication getInstance(){
         return nabstaApplicationInstance;
     }
     @Override
     public void onCreate() {
-
+        super.onCreate();
         nabstaApplicationInstance = this;
 
         Log.d(LOG_TAG, "Nabsta starting...");
-
         createRootDirectory();
         setupDataBase();
         loadSongOnStartUp();
